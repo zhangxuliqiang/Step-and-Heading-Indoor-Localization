@@ -18,7 +18,7 @@ function [Data, elapsed] = importHyperImuFile(dataset, dataLines)
 %% Input handling
 
 % If dataLines is not specified, define defaults
-if nargin < 3
+if nargin < 2
     dataLines = [5, Inf];
 end
 file = dataset.file;
