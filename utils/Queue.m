@@ -3,10 +3,6 @@ classdef Queue < handle
         elements 
     end
 
-    properties ( Dependent = true )
-        NumElements
-    end
-
     methods
         function obj = Queue
             obj.elements = timetable;
