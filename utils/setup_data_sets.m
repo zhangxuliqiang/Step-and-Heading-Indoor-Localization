@@ -13,5 +13,5 @@ hyperIMU_inhand.dataSetProp = DataSetProp("Accelerometer","timestamp",1/1000, ..
 file.directory = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/Datasets/';
 file.name = 'user1_armband_1506423438471.csv';
 user1_armband.file = file;
-user1_armband.dataSetProp = DataSetProp("Accelerometer","timestamp",(1/1000000), ...
+user1_armband.dataSetProp = DataSetProp("Accelerometer","timestamp",(1E-9), ...
     "Accelerometerx","Accelerometery","Accelerometerz")
