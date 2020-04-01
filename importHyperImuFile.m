@@ -1,4 +1,4 @@
-function Data = importHyperImuFile(filename, dataLines)
+function [Data, elapsed] = importHyperImuFile(dataset, dataLines)
 %IMPORTFILE Import data from a text file
 %  HIMU1 = IMPORTFILE(FILENAME) reads data from text file FILENAME for
 %  the default selection.  Returns the data as a table.
@@ -18,9 +18,12 @@ function Data = importHyperImuFile(filename, dataLines)
 %% Input handling
 
 % If dataLines is not specified, define defaults
-if nargin < 2
+if nargin < 3
     dataLines = [5, Inf];
 end
+file = dataset.file;
+dataSetProp = dataset.dataSetProp;
+file_path = strcat(file.directory, file.name);
 
 %% Setup the Import Options and import the data
 opts = delimitedTextImportOptions("NumVariables", 4);
@@ -30,7 +33,14 @@ opts.DataLines = dataLines;
 opts.Delimiter = ",";
 
 % Specify column names and types
-opts.VariableNames = ["timestamp", "K6DS3TR_Accelerometerx", "K6DS3TR_Accelerometery", "K6DS3TR_Accelerometerz"];
+% dataSetProp.measurement_var, dataSetProp.time_var_name, dataSetProp.measurement_x, dataSetProp.measurement_y, dataSetProp.measurement_z
+
+% opts.VariableNames = ["timestamp", "K6DS3TR_Accelerometerx",
+% "K6DS3TR_Accelerometery", "K6DS3TR_Accelerometerz"];
+
+opts.VariableNames = [ dataSetProp.time_var_name, dataSetProp.measurement_x, ...
+                       dataSetProp.measurement_y, dataSetProp.measurement_z];
+
 opts.VariableTypes = ["double", "double", "double", "double"];
 
 % Specify file level properties
@@ -38,10 +48,11 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 % Import the data
-Data = readtable(filename, opts);
+Data = readtable(file_path, opts);
 
 % find elapsed time and transform from milliseconds to seconds
-milli2sec = (Data.timestamp(:)-Data.timestamp(1))/1000;
+elapsed = (Data.timestamp(:)-Data.timestamp(1));
+milli2sec = elapsed.*dataSetProp.time_units;
 Data.timestamp = seconds(milli2sec);
 Data = table2timetable(Data);
 end
