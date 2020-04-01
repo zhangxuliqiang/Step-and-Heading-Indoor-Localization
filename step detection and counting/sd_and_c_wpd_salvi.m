@@ -3,18 +3,17 @@
 
 close all
 clear all
+%%
+setup_data_sets
 
-data_directory = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Datasets/';
-log_name = 'HIMU-2020-03-24_18-58-04.csv';
-
-Acceleration = importHyperImuFile(strcat(data_directory, log_name));
+Acceleration = importHyperImuFile(hyperIMU_inhand);
 Acceleration.Properties.VariableNames = ["X","Y","Z"];
 disp('done importing')
 
 %% plotting the raw data
-figure(1)
-s1 = stackedplot(Acceleration);
-title('3-axis raw accelerometer data for 8 steps')
+% figure(1)
+% s1 = stackedplot(Acceleration);
+% title('3-axis raw accelerometer data for 8 steps')
 
 %% create timetable for processed data
 step_detection = timetable(Acceleration.timestamp);
@@ -227,3 +226,6 @@ scatter(step_detection.Time,step_detection.acc4_max)
 hold off
 %%
 stackedplot(step_detection)
+
+%%
+
