@@ -3,11 +3,12 @@
 
 close all
 clear all
-%%
+
 setup_data_sets
 
-Acceleration = importHyperImuFile(hyperIMU_inhand);
+Acceleration = importHyperImuFile(user1_armband);
 Acceleration.Properties.VariableNames = ["X","Y","Z"];
+Acceleration = Acceleration(1:1000,:);
 disp('done importing')
 
 %% plotting the raw data
@@ -60,11 +61,11 @@ step_detection.acc1_gauss = NaN(height(step_detection),1);
 filt_queue_size = [];
 
 for n = 1:1:height(step_detection)
-    
+    n
     dp_gauss = step_detection(n,:);
     filtering_window.enqueue(dp_gauss);
     
-    filt_queue_size = [filt_queue_size,filtering_window.getLength()];
+%     filt_queue_size = [filt_queue_size,filtering_window.getLength()];
     
     if (filtering_window.getLength() == filt_window_size)
         
@@ -76,7 +77,11 @@ for n = 1:1:height(step_detection)
         end
         
         dp_middle= filtering_window.elements(filt_middle_index,:);
-        step_detection(dp_middle.Time,:).acc1_gauss = ssum/gauss_sum;
+        
+        % there is a probability that sampling has errored and same time
+        % step is found
+        dp_gauss_index_height = height(step_detection(dp_middle.Time,:));
+        step_detection(dp_middle.Time,:).acc1_gauss = ssum/gauss_sum * ones(dp_gauss_index_height,1);
         filtering_window.dequeue();
     end
 end
@@ -93,11 +98,11 @@ step_detection.acc2_score = NaN(height(step_detection),1);
 score_queue_size = [];
 
 for n = 1:1:height(step_detection)
-    
+    n
     dp_score = step_detection(n,:);
     scoring_window.enqueue(dp_score);
     
-    score_queue_size = [score_queue_size,scoring_window.getLength()];
+%     score_queue_size = [score_queue_size,scoring_window.getLength()];
     
     if (scoring_window.getLength() == score_window_size)
         
@@ -213,18 +218,19 @@ end
 
 %%
 close all
-figure(4)
+figure(1)
 hax=axes;
 
 hold on
-plot(step_detection.Time,step_detection.acc1_gauss)
+plot(step_detection.Time,step_detection.acc3_detect)
 scatter(step_detection.Time,step_detection.acc4_max)
 
-% for i = 1:length(slidding_window)
-%     line([slidding_window(i) slidding_window(i)],get(hax,'YLim'),'Color',[1 0 0])
-% end
+for i = 1:length(slidding_window)
+    line([slidding_window(i) slidding_window(i)],get(hax,'YLim'),'Color',[1 0 0])
+end
 hold off
 %%
+figure(2)
 stackedplot(step_detection)
 
 %%
