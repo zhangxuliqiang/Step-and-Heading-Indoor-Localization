@@ -1,4 +1,4 @@
-function [Data, elapsed] = importHyperImuFile(dataset, dataLines)
+function [Data, elapsed] = CSVFile2Timetable(dataset, dataLines)
 %IMPORTFILE Import data from a text file
 %  HIMU1 = IMPORTFILE(FILENAME) reads data from text file FILENAME for
 %  the default selection.  Returns the data as a table.
