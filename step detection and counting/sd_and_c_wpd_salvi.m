@@ -48,7 +48,6 @@ step_detection.acc0_magnitude = sqrt(Acceleration.X.^2 + Acceleration.Y.^2 + ...
 % TODO: they reference low pass filter with 3 Hz cut off frequency
 % but do not use it for the gaussian filter
 
-disp('filtering norm')
 
 filtering_window = Queue();
 gauss_window = gaussianWindow(filt_window_size, filt_std);
@@ -61,7 +60,7 @@ step_detection.acc1_gauss = NaN(height(step_detection),1);
 filt_queue_size = [];
 
 for n = 1:1:height(step_detection)
-    n
+    disp(['filtering norm: ' int2str(n)])
     dp_gauss = step_detection(n,:);
     filtering_window.enqueue(dp_gauss);
     
@@ -88,7 +87,7 @@ end
 
 %% scoring
 
-disp('applying scoring')
+
 
 scoring_window = Queue();
 score_middle_index = round(score_window_size/2);
@@ -98,7 +97,7 @@ step_detection.acc2_score = NaN(height(step_detection),1);
 score_queue_size = [];
 
 for n = 1:1:height(step_detection)
-    n
+    disp(['applying scoring: ' int2str(n)])
     dp_score = step_detection(n,:);
     scoring_window.enqueue(dp_score);
     
@@ -139,12 +138,11 @@ end
 
 %% Detection stage:
 
-disp('detecting peaks')
-
 n = 0;
 step_detection.acc3_detect = NaN(height(step_detection),1);
 
 for data_index = 1:1:height(step_detection)
+    disp(['detecting peaks: ' int2str(n)])
     
     dp_detect = step_detection(data_index,:);
     
@@ -184,14 +182,12 @@ end
 
 %% finding local minimum through sliding window
 
-disp('finding maximums')
-
 n = 0;
 slidding_window = [];
 step_detection.acc4_max = NaN(height(step_detection),1);
 
 for data_index = 1:1:height(step_detection)
-    
+    disp(['finding maximums: ' int2str(n)])
     dp_max = step_detection(data_index,:);
     
     if  not(isnan(dp_max.acc3_detect))
