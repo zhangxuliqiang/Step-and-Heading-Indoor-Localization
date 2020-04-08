@@ -55,4 +55,5 @@ elapsed = (Data.timestamp(:)-Data.timestamp(1));
 milli2sec = elapsed.*dataSetProp.time_units;
 Data.timestamp = seconds(milli2sec);
 Data = table2timetable(Data);
+Data = unique(Data);
 end
