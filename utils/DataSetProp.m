@@ -6,21 +6,17 @@ classdef DataSetProp  < handle
         measurement_var 
         time_var_name
         time_units
-        measurement_x
-        measurement_y
-        measurement_z
+        column_names
     end
     
     methods
         function obj = DataSetProp(measurement_var, time_var_name, time_units, ...
-                measurement_x, measurement_y, measurement_z)
+                column_names)
             
         obj.measurement_var = measurement_var;
         obj.time_var_name   = time_var_name;
         obj.time_units      = time_units;
-        obj.measurement_x   = measurement_x;
-        obj.measurement_y   = measurement_y;
-        obj.measurement_z   = measurement_z;
+        obj.column_names   = column_names;
 
         end
     end

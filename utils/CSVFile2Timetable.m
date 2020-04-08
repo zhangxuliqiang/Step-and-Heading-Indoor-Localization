@@ -38,10 +38,9 @@ opts.Delimiter = ",";
 % opts.VariableNames = ["timestamp", "K6DS3TR_Accelerometerx",
 % "K6DS3TR_Accelerometery", "K6DS3TR_Accelerometerz"];
 
-opts.VariableNames = [ dataSetProp.time_var_name, dataSetProp.measurement_x, ...
-                       dataSetProp.measurement_y, dataSetProp.measurement_z];
+opts.VariableNames = [ dataSetProp.time_var_name, dataSetProp.column_names];
 
-opts.VariableTypes = ["double", "double", "double", "double"];
+opts.VariableTypes = repmat("double",[1 length(opts.VariableNames)]);
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
