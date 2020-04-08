@@ -44,6 +44,15 @@ disp('calculating norm')
 step_detection.acc0_magnitude = sqrt(Acceleration.X.^2 + Acceleration.Y.^2 + ...
     Acceleration.Z.^2);
 
+%% Thresholding on standard deviation of 
+
+step_detection.acc0_magnitude_thres = NaN(height(step_detection),1);
+
+step_detection.acc0_magnitude_std = movstd(step_detection.acc0_magnitude,70);
+threshold_row_index = step_detection.acc0_magnitude_std > 0.6;
+threshold_rows = step_detection(threshold_row_index,:);
+step_detection(threshold_rows.Time,:).acc0_magnitude_thres = threshold_rows.acc0_magnitude;
+
 %% filtering:
 % TODO: they reference low pass filter with 3 Hz cut off frequency
 % but do not use it for the gaussian filter
@@ -71,7 +80,7 @@ for n = 1:1:height(step_detection)
         ssum = 0;
         
         for window_index = 1: filt_window_size
-            dp_window_mag = filtering_window.elements(window_index,:).acc0_magnitude;
+            dp_window_mag = filtering_window.elements(window_index,:).acc0_magnitude_thres;
             ssum = ssum +  dp_window_mag.* gauss_window(window_index);
         end
         
