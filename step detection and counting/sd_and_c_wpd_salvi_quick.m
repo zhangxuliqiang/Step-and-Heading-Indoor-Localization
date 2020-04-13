@@ -1,8 +1,3 @@
-%% step detection and counting - windowed peak detection
-%salvi et al approach
-clc
-close all
-clear all
 
 setup_data_sets
 
@@ -76,61 +71,28 @@ step_detection.acc2_conv_score = conv_score_tester;
 
 %% Detection stage:
 disp('Detecting peaks')
-n = 0;
-step_detection.acc3_detect = NaN(height(step_detection),1);
-mean_detect = NaN(height(step_detection),1);
-std_detect = NaN(height(step_detection),1);
+% Detecting outliers with builtin matlab methods
+step_detection.acc3_quick_detect = NaN(height(step_detection),1);
 
-for data_index = 1:1:height(step_detection)
-%     disp(['detecting peaks: ' int2str(data_index)])
-    
-    dp_detect = step_detection(data_index,:);
-    
-    detect_score = dp_detect.acc2_conv_score;
-    
-    if  not(isnan(detect_score))
-        
-        n = n + 1;
-        
-        if n == 1
-            detect_mean = detect_score;
-            detect_std = 0;
-            
-        elseif n == 2
-            det_o_mean = detect_mean;
-            detect_mean = (detect_score + detect_mean)/2;
-            detect_std = sqrt( ...
-                ((detect_score - detect_mean)^2 + ...
-                (det_o_mean - detect_mean)^2) / 2 ...
-                );
-        else
-            det_o_mean = detect_mean;
-            detect_mean = (detect_score + (n - 1)*detect_mean) / n;
-            detect_std = sqrt(((n - 2) * detect_std^2 / (n - 1)) + ...
-                (det_o_mean - detect_mean)^2 + ...
-                (detect_score - detect_mean)^2 / n);
-        end
-        
-        if n > 15
-            if (detect_score - detect_mean) > detect_std * detect_threshold
-                step_detection(dp_detect.Time,:).acc3_detect = ...
-                    step_detection(dp_detect.Time,:).acc1_conv_gauss;
-            end
-        end
-    end
+cum_moving_mean = movmean(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
+cum_moving_std = movstd(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
 
-end
+cum_detect_score_row_index = (step_detection.acc2_conv_score - cum_moving_mean) > ...
+                    cum_moving_std .* detect_threshold;
+                
+threshold_rows = step_detection(cum_detect_score_row_index,:);
+step_detection(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
 
 %% finding local maxima through sliding window
 disp('Finding local maxima')
 step_detection.acc4_builtin_max = NaN(height(step_detection),1);
 
-builtinmax = islocalmax(step_detection.acc3_detect,'MinSeparation',seconds(pp_window_t), ...
+builtinmax = islocalmax(step_detection.acc3_quick_detect,'MinSeparation',seconds(pp_window_t), ...
                         'SamplePoints',step_detection.Time);
 
 threshold_row_index = step_detection.acc0_magnitude_std > 0.6;
 local_max_rows = step_detection(builtinmax,:);
-step_detection(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_detect;
+step_detection(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_quick_detect;
 %%
 figure(2)
 hold on

@@ -220,6 +220,26 @@ for data_index = 1:1:height(step_detection)
 
 end
 
+%% quick builtin option
+step_detection.acc3_quick_detect = NaN(height(step_detection),1);
+
+cum_moving_mean = movmean(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
+cum_moving_std = movstd(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
+
+cum_detect_score_row_index = (step_detection.acc2_conv_score - cum_moving_mean) > ...
+                    cum_moving_std .* detect_threshold;
+                
+threshold_rows = step_detection(cum_detect_score_row_index,:);
+step_detection(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
+
+stackedplot([step_detection.acc3_detect, step_detection.acc3_quick_detect])
+
+%%
+figure()
+% plot(round(step_detection.acc3_detect,2)== round(step_detection.acc3_quick_detect,2));
+difference = difference(~isnan(step_detection.acc3_detect -step_detection.acc3_quick_detect));
+ plot(difference);
+
 %% finding local minimum through sliding window
 
 n = 0;
