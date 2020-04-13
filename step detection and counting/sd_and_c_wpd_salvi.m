@@ -6,9 +6,10 @@ clear all
 
 setup_data_sets
 
-Acceleration = importHyperImuFile(user1_armband);
-Acceleration.Properties.VariableNames = ["X","Y","Z"];
+Acceleration = CSVFile2Timetable(user1_armband);
 Acceleration = Acceleration(1:1000,:);
+
+% Acceleration = JSONFile2Timetable(person1_test_path1);
 disp('done importing')
 
 %% plotting the raw data
