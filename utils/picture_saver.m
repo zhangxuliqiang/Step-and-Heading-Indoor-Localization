@@ -1,3 +1,5 @@
+function picture_saver()
+
 h =  findobj('type','figure');
 n = length(h);
 time = datestr(now,'yyyymmdd_HHMM');
@@ -5,21 +7,20 @@ time = datestr(now,'yyyymmdd_HHMM');
 for i  = 1:1:n
     fig = figure(i);
     h1= gca;
-    if isa(h1, 'matlab.graphics.chart.StackedLineChart')
-        title = h1.Title;
-    end
+    title = h1.Title;
+    
     
     if isempty(title) || size(title,2)< 1
         identifier = ['fig_',int2str(i)];
     else
-        identifier = title;
+        identifier = title.String;
     end
     
     identifier = strrep(identifier," ", "_");
-    pic_name = strcat(pwd,'/pictures/',time,'_', identifier)
+    pic_name = strcat(pwd,'/pictures/',time,'_', identifier);
     
     
     saveas(fig,pic_name,'eps');
-    
-end 
-
+    saveas(fig,pic_name,'png');
+end
+end
