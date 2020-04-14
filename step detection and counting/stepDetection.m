@@ -22,7 +22,7 @@ score_type = 'mean difference';
 score_window_size = 35;
 
 % detection
-detect_threshold = 1.2;
+detect_threshold = 1;
 
 % post-processing
 pp_window_t = 0.200; %s
