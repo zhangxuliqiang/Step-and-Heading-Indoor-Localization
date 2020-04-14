@@ -81,10 +81,10 @@ step_detection(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_co
 disp('     Find local maxima')
 step_detection.acc4_builtin_max = NaN(height(step_detection),1);
 
-builtinmax = islocalmax(step_detection.acc3_detect,'MinSeparation',seconds(pp_window_t), ...
+builtinmax = islocalmax(step_detection.acc3_quick_detect,'MinSeparation',seconds(pp_window_t), ...
                         'SamplePoints',step_detection.Time);
 
 threshold_row_index = step_detection.acc0_magnitude_std > 0.6;
 local_max_rows = step_detection(builtinmax,:);
-step_detection(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_detect;
+step_detection(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_quick_detect;
 
