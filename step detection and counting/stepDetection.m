@@ -59,8 +59,8 @@ disp('     Apply gaussian filter')
 gauss_window = gaussianWindow(filt_window_size, filt_std);
 gauss_sum = sum(gauss_window);
 kernel = transpose(gauss_window./gauss_sum);
-conv_filt_tester = conv(step_detection.acc0_magnitude_thres, kernel, 'same');
-step_detection.acc1_conv_gauss = conv_filt_tester;
+conv_gauss_filter = conv(step_detection.acc0_magnitude_thres, kernel, 'same');
+step_detection.acc1_conv_gauss = conv_gauss_filter;
 
 %% Scor convolution process
 disp('     Apply scoring')
@@ -68,9 +68,9 @@ score_middle_index = round(score_window_size/2);
 
 kernel1 = ones(score_window_size,1).*(-1/(score_window_size - 1));
 kernel1(score_middle_index,1) = 1;
-conv_score_tester = conv(step_detection.acc1_conv_gauss, kernel1, 'same');
+conv_score = conv(step_detection.acc1_conv_gauss, kernel1, 'same');
 
-step_detection.acc2_conv_score = conv_score_tester;
+step_detection.acc2_conv_score = conv_score;
 
 %% Detection stage:
 disp('     Detect peaks')
