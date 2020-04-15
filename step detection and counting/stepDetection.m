@@ -1,4 +1,8 @@
-function [Acceleration, step_detection] = stepDetection(target)
+function [Acceleration, step_detection] = stepDetection(target, debug)
+
+if nargin < 2
+    debug = true;
+end
 
 % determine which import to use depending on file extension
 [~, ~, fExt] = fileparts(target.file.name);
@@ -10,9 +14,9 @@ switch lower(fExt)
     otherwise
         error('Unexpected file extension: %s', fExt);
 end
+disp(['step detection calculation using: ' target.file.name])
 disp(['dataset size is:' int2str(height(Acceleration)) ' rows']);
-% Acceleration = JSONFile2Timetable(person1_test_path1);
-disp('     import data')
+debugDisp('     import data',debug)
 
 %% create timetable for processed data
 step_detection = timetable(Acceleration.Time);
@@ -38,12 +42,12 @@ pp_window_t = 0.200; %s
 
 %% preprocessing: generate the norm of the acceleration signal
 % TODO: interpolation to get constant sampling time
-disp('     calculate norm')
+debugDisp('     calculate norm',debug)
 step_detection.acc0_magnitude = sqrt(Acceleration.X.^2 + Acceleration.Y.^2 + ...
     Acceleration.Z.^2);
 
-%% Threshold on standard deviation of 
-disp('     apply threshold on standard deviation')
+%% Threshold on standard deviation of acceleration magnitude
+debugDisp('     apply threshold on standard deviation',debug)
 step_detection.acc0_magnitude_thres = NaN(height(step_detection),1);
 step_detection.acc0_magnitude_std = NaN(height(step_detection),1);
 
@@ -55,7 +59,7 @@ threshold_rows = step_detection(threshold_row_index,:);
 step_detection.acc0_magnitude_thres = step_detection.acc0_magnitude .* threshold_row_index;
 
 %% Filter Convolution process
-disp('     Apply gaussian filter')
+debugDisp('     Apply gaussian filter',debug)
 gauss_window = gaussianWindow(filt_window_size, filt_std);
 gauss_sum = sum(gauss_window);
 kernel = transpose(gauss_window./gauss_sum);
@@ -63,7 +67,7 @@ conv_gauss_filter = conv(step_detection.acc0_magnitude_thres, kernel, 'same');
 step_detection.acc1_conv_gauss = conv_gauss_filter;
 
 %% Scor convolution process
-disp('     Apply scoring')
+debugDisp('     Apply scoring',debug)
 score_middle_index = round(score_window_size/2);
 
 kernel1 = ones(score_window_size,1).*(-1/(score_window_size - 1));
@@ -73,7 +77,7 @@ conv_score = conv(step_detection.acc1_conv_gauss, kernel1, 'same');
 step_detection.acc2_conv_score = conv_score;
 
 %% Detection stage:
-disp('     Detect peaks')
+debugDisp('     Detect peaks',debug)
 % Detecting outliers with builtin matlab methods
 step_detection.acc3_quick_detect = NaN(height(step_detection),1);
 
@@ -87,7 +91,7 @@ threshold_rows = step_detection(cum_detect_score_row_index,:);
 step_detection(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
 
 %% find local maxima through sliding window
-disp('     Find local maxima')
+debugDisp('     Find local maxima',debug)
 step_detection.acc4_builtin_max = NaN(height(step_detection),1);
 
 builtinmax = islocalmax(step_detection.acc3_quick_detect,'MinSeparation',seconds(pp_window_t), ...

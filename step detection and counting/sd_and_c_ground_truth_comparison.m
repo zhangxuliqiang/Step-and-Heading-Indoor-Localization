@@ -16,7 +16,7 @@ target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(1E-9), ...
     ["X","Y","Z","algo_step_detect","truth_step_detect"]);
 
-[Acceleration, step_detection] = stepDetection(target);
+[Acceleration, step_detection] = stepDetection(target, false);
 
 % find the number of step taken according to the ground truth
 gt_sd_index = find(diff(Acceleration.truth_step_detect));
