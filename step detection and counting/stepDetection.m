@@ -1,6 +1,15 @@
 function [Acceleration, step_detection] = stepDetection(target)
 
-Acceleration = CSVFile2Timetable(target);
+% determine which import to use depending on file extension
+[~, ~, fExt] = fileparts(target.file.name);
+switch lower(fExt)
+    case '.csv'
+        Acceleration = CSVFile2Timetable(target);
+    case '.json'
+        Acceleration = JSONFile2Timetable(target);
+    otherwise
+        error('Unexpected file extension: %s', fExt);
+end
 disp(['dataset size is:' int2str(height(Acceleration)) ' rows']);
 % Acceleration = JSONFile2Timetable(person1_test_path1);
 disp('     import data')
