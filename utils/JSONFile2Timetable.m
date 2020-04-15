@@ -16,11 +16,11 @@ data_array = [elapsed_time, ...
         step_length_data.linear_acceleration.y ...
         step_length_data.linear_acceleration.z];
     
-VariableNames = [ dataSetProp.time_var_name, dataSetProp.measurement_x, ...
-                       dataSetProp.measurement_y, dataSetProp.measurement_z];
+VariableNames = [ dataSetProp.time_var_name, dataSetProp.column_names];
  
 Data = array2table(data_array,'VariableNames', VariableNames);
 Data.timestamp = seconds(Data.timestamp);
 Data = table2timetable(Data);
+Data = unique(Data);
 
 end
