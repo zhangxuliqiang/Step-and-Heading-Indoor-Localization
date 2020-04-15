@@ -1,4 +1,4 @@
-function [Acceleration, step_detection] = stepDetection(target, debug)
+function [steps, Acceleration, sd_components] = stepDetection(target, debug)
 
 if nargin < 2
     debug = true;
@@ -100,4 +100,7 @@ builtinmax = islocalmax(sd_components.acc3_quick_detect,'MinSeparation',seconds(
 local_max_rows = sd_components(builtinmax,:);
 sd_components(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_quick_detect;
 
+%% Determine rows where a step was detected
+sd_index = find(not(isnan(sd_components.acc4_builtin_max)));
+steps = sd_components(sd_index,:);
 
