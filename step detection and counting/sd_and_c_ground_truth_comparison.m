@@ -6,12 +6,11 @@ gt2algo_comparison = [];
 
 path  = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/Online Code/oxford step counter/validation/';
 
-gt_sd_data_sets = dir (strcat(path,'/*.csv'));
-for gt_sd_data = gt_sd_data_sets'
-    disp(['calculating: ' gt_sd_data.name])
+gt_sd_datasets = dir(strcat(path,'/*.csv'));
+for gt_sd_dataset = gt_sd_datasets'
 
-file.directory = [gt_sd_data.folder '/'] ;
-file.name = gt_sd_data.name;
+file.directory = [gt_sd_dataset.folder '/'] ;
+file.name = gt_sd_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(1E-9), ...
