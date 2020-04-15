@@ -14,7 +14,7 @@ file.directory = [gt_sd_data.folder '/'] ;
 file.name = gt_sd_data.name;
 
 target.file = file;
-target.dataSetProp = DataSetProp("Accelerometer","timestamp",(1E-9), ...
+target.dataSetProp = DataSetProp("Accelerometer","Time",(1E-9), ...
     ["X","Y","Z","algo_step_detect","truth_step_detect"]);
 
 [Acceleration, step_detection] = stepDetection(target);

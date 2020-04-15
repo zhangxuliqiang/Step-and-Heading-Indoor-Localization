@@ -50,9 +50,9 @@ opts.EmptyLineRule = "read";
 Data = readtable(file_path, opts);
 
 % find elapsed time and transform from milliseconds to seconds
-elapsed = (Data.timestamp(:)-Data.timestamp(1));
+elapsed = (Data.Time(:)-Data.Time(1));
 milli2sec = elapsed.*dataSetProp.time_units;
-Data.timestamp = seconds(milli2sec);
+Data.Time = seconds(milli2sec);
 Data = table2timetable(Data);
 Data = unique(Data);
 end

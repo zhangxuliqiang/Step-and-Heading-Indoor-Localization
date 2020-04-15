@@ -15,7 +15,7 @@ disp(['dataset size is:' int2str(height(Acceleration)) ' rows']);
 disp('     import data')
 
 %% create timetable for processed data
-step_detection = timetable(Acceleration.timestamp);
+step_detection = timetable(Acceleration.Time);
 
 %% optimal settings according to salvi et al
 

@@ -19,7 +19,7 @@ data_array = [elapsed_time, ...
 VariableNames = [ dataSetProp.time_var_name, dataSetProp.column_names];
  
 Data = array2table(data_array,'VariableNames', VariableNames);
-Data.timestamp = seconds(Data.timestamp);
+Data.Time = seconds(Data.Time);
 Data = table2timetable(Data);
 Data = unique(Data);
 
