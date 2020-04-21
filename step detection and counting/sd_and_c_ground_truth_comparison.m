@@ -45,13 +45,18 @@ bar_comp_data = [];
 bar_names = {};
 n = 0;
 figure(1)
-for comparison = gt2algo_comparison'
+for comparison = gt2algo_comparisons'
    n = n + 1;
-   % formatting name for nice plotting
-   name = strsplit(strrep(comparison.name,'_',' '),'5');
+   % formatting name for nice plotting by replacing 
+   name_format = strrep(comparison.name,'_',' ');
+   
+   %cut the string at the char 5 so that date info is not seen in plot
+   name = strsplit(name_format,'5');
+   
+   %only use the name
    bar_names(n) = {name{1}(1:end-2)}; 
-   bar_comp_data = [ bar_comp_data; comparison.gt_sd_height, comparison.matlab_algo_sd_height, ...
-                comparison.android_algo_sd_height];    
+   bar_comp_data = [ bar_comp_data; comparison.ground_truth_steps.nr_steps, comparison.matlab_algo_steps.nr_steps, ...
+                comparison.android_algo_steps.nr_steps];    
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
@@ -64,7 +69,7 @@ bar_comp_data = [];
 bar_names = {};
 n = 0;
 figure(2)
-for comparison = gt2algo_comparison'
+for comparison = gt2algo_comparisons'
    n = n + 1;
    % formatting name for nice plotting
    name = strsplit(strrep(comparison.name,'_',' '),'5');
@@ -72,8 +77,8 @@ for comparison = gt2algo_comparison'
    
    %grouping dataset together
    bar_comp_data = [ bar_comp_data;  ... 
-                (comparison.matlab_algo_sd_height - comparison.gt_sd_height)./comparison.gt_sd_height *100, ...
-                (comparison.android_algo_sd_height -comparison.gt_sd_height)./comparison.gt_sd_height * 100];    
+                (comparison.matlab_algo_steps.nr_steps - comparison.ground_truth_steps.nr_steps)./comparison.ground_truth_steps.nr_steps *100, ...
+                (comparison.android_algo_steps.nr_steps -comparison.ground_truth_steps.nr_steps)./comparison.ground_truth_steps.nr_steps * 100];    
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
