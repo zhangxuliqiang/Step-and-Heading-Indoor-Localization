@@ -107,5 +107,6 @@ sd_components(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_quic
 
 %% Determine rows where a step was detected
 sd_index = find(not(isnan(sd_components.acc4_builtin_max)));
-steps = sd_components(sd_index,:);
+steps.data = sd_components(sd_index,:);
+[steps.nr_steps, ~] = size(sd_index);
 
