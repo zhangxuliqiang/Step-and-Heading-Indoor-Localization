@@ -2,11 +2,13 @@ clc
 close all
 clear all
 
-gt2algo_comparison = [];
+gt2algo_comparisons = [];
 
-path  = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/Online Code/oxford step counter/validation/';
+path.path  = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/Online Code/oxford step counter/validation/';
+path.time_unit = 1E-9;
 
-gt_sd_datasets = dir(strcat(path,'/*.csv'));
+gt_sd_datasets = dir(strcat(path.path,'/*.csv'));
+%
 for gt_sd_dataset = gt_sd_datasets'
 
 file.directory = [gt_sd_dataset.folder '/'] ;
@@ -16,9 +18,9 @@ target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(1E-9), ...
     ["X","Y","Z","algo_step_detect","truth_step_detect"]);
 
-[Acceleration, step_detection] = stepDetection(target, false);
+sd.name = file.name;
 
-% find the number of step taken according to the ground truth
+[sd.matlab_algo_steps, sd.Acceleration, sd.sd_components] = stepDetection(target, false);
 gt_sd_index = find(diff(Acceleration.truth_step_detect));
 [gt_sd_height, ~] = size(gt_sd_index);
 
