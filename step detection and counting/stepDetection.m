@@ -86,8 +86,8 @@ debugDisp('     Detect peaks',debug)
 % Detecting outliers with builtin matlab methods
 sd_components.acc3_quick_detect = NaN(height(sd_components),1);
 
-cum_moving_mean = movmean(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0]);
-cum_moving_std = movstd(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0]);
+cum_moving_mean = movmean(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
+cum_moving_std = movstd(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
 
 cum_detect_score_row_index = (sd_components.acc2_conv_score - cum_moving_mean) > ...
                     cum_moving_std .* detect_threshold;
