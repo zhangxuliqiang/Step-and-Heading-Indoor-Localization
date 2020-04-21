@@ -53,20 +53,25 @@ sd_components.acc0_magnitude_std = NaN(height(sd_components),1);
 
 sd_components.acc0_magnitude_std = movstd(sd_components.acc0_magnitude,70);
 
-threshold_row_index = sd_components.acc0_magnitude_std > 0.6;
+threshold_row_index = sd_components.acc0_magnitude_std > 2;
 threshold_rows = sd_components(threshold_row_index,:);
 
 sd_components.acc0_magnitude_thres = sd_components.acc0_magnitude .* threshold_row_index;
 
 %% Filter Convolution process
 debugDisp('     Apply gaussian filter',debug)
+
+sd_components.acc1_conv_gauss = NaN(height(sd_components),1);
+
 gauss_window = gaussianWindow(filt_window_size, filt_std);
 gauss_sum = sum(gauss_window);
 kernel = transpose(gauss_window./gauss_sum);
-conv_gauss_filter = conv(sd_components.acc0_magnitude_thres, kernel, 'same');
-sd_components.acc1_conv_gauss = conv_gauss_filter;
+conv_gauss_filter = conv(sd_components.acc0_magnitude_thres, kernel, 'valid');
 
-%% Scor convolution process
+half_window = floor(filt_window_size/2);
+sd_components(half_window+1:end-half_window,:).acc1_conv_gauss = conv_gauss_filter;
+
+%% Score convolution process
 debugDisp('     Apply scoring',debug)
 score_middle_index = round(score_window_size/2);
 
