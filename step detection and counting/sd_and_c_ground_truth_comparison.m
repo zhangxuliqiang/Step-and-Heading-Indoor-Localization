@@ -15,29 +15,28 @@ file.directory = [gt_sd_dataset.folder '/'] ;
 file.name = gt_sd_dataset.name;
 
 target.file = file;
-target.dataSetProp = DataSetProp("Accelerometer","Time",(1E-9), ...
+target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
     ["X","Y","Z","algo_step_detect","truth_step_detect"]);
 
 sd.name = file.name;
 
 [sd.matlab_algo_steps, sd.Acceleration, sd.sd_components] = stepDetection(target, false);
-gt_sd_index = find(diff(Acceleration.truth_step_detect));
-[gt_sd_height, ~] = size(gt_sd_index);
 
-% find the number of steps detected by matlab algorithm
-matlab_algo_sd_index = find(not(isnan(step_detection.acc4_builtin_max)));
-[matlab_algo_sd_height, ~] = size(matlab_algo_sd_index);
+sd.sd_comparison = createTimeSeriesCompare(sd.Acceleration, sd.matlab_algo_steps.data);
 
-% find the number of steps detected by the android algorithm
-android_algo_sd_index = find(diff(Acceleration.algo_step_detect));
-[android_algo_sd_height, ~] = size(android_algo_sd_index);
+% find the step time series of android and ground truth 
+sd.android_algo_steps = findSteps(sd.sd_comparison.sd_android_algo_points, sd.Acceleration);
+sd.ground_truth_steps = findSteps(sd.sd_comparison.sd_ground_truth_points, sd.Acceleration);
 
-output.name = file.name;
-output.gt_sd_height = gt_sd_height;
-output.matlab_algo_sd_height = matlab_algo_sd_height;
-output.android_algo_sd_height = android_algo_sd_height;
+parfor result_index = 1 : 25
+    debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
+    delta_t = result_index * 0.02; 
+    pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+end
 
-gt2algo_comparison = [gt2algo_comparison; output];
+sd.pseudo_confusion = pseudo_confusion;
+
+gt2algo_comparisons = [gt2algo_comparisons; sd];
 
 end
 %% Absolute number of steps detected
