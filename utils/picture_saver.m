@@ -22,5 +22,6 @@ for i  = 1:1:n
     
     saveas(fig,pic_name,'eps');
     saveas(fig,pic_name,'png');
+    saveas(fig,pic_name,'fig');
 end
 end
