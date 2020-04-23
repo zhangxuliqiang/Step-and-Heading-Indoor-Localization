@@ -82,10 +82,87 @@ for comparison = gt2algo_comparisons'
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
-title("step counting error with lower standard deviation threshold") 
+title("step counting error") 
 legend('matlab algorithm','android algorithm')
 
+%% absolute true positives
+bar_comp_data = [];
+bar_names = {};
+n = 0;
+figure()
+for comparison = gt2algo_comparisons'
+    n = n + 1;
+   % formatting name for nice plotting
+   name = strsplit(strrep(comparison.name,'_',' '),'5');
+   bar_names(n) = {name{1}(1:end-2)}; 
+   
+   %grouping dataset together
+   bar_comp_data = [ bar_comp_data; max([comparison.matlab_pseudo_confusion.true_positive]), ...
+                                    max([comparison.android_pseudo_confusion.true_positive]), ...
+                                    comparison.ground_truth_steps.nr_steps ];    
+
+end
+bar_names = categorical(bar_names);
+bar(bar_names,bar_comp_data)
+ylabel('number of steps')
+title("step true positives compared to ground truth detection") 
+legend('matlab algorithm true positives','android algorithm true positives','ground truth detection')
+
+%% percentual true positives
+bar_comp_data = [];
+max_matlab_tp_delta_t_table = [];
+max_android_tp_delta_t_table = [];
+bar_names = {};
+n = 0;
+figure()
+for comparison = gt2algo_comparisons'
+    n = n + 1;
+   % formatting name for nice plotting
+   name = strsplit(strrep(comparison.name,'_',' '),'5');
+   bar_names(n) = {name{1}(1:end-2)}; 
+   
+   [max_matlab_tp, max_matlab_tp_index] = max([comparison.matlab_pseudo_confusion.true_positive],[],2,'linear');
+   [max_android_tp, max_android_tp_index] = max([comparison.android_pseudo_confusion.true_positive],[],2,'linear');
+   
+   max_matlab_tp_delta_t = comparison.matlab_pseudo_confusion(max_matlab_tp_index).delta_t;
+   max_matlab_tp_delta_t_table = [max_matlab_tp_delta_t_table, max_matlab_tp_delta_t];
+   
+   max_android_tp_delta_t = comparison.matlab_pseudo_confusion(max_android_tp_index).delta_t;
+   max_android_tp_delta_t_table = [max_android_tp_delta_t_table, max_android_tp_delta_t];
+   
+   %grouping dataset together
+   bar_comp_data = [ bar_comp_data; ( max_matlab_tp - comparison.ground_truth_steps.nr_steps)/comparison.ground_truth_steps.nr_steps*100, ...
+                                    (max_android_tp - comparison.ground_truth_steps.nr_steps)/comparison.ground_truth_steps.nr_steps*100, ...
+                                    ];    
+
+end
+bar_names = categorical(bar_names);
+b = bar(bar_names,bar_comp_data);
+
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(max_matlab_tp_delta_t_table);
+text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
+    'VerticalAlignment','top')
+
+xtips2 = b(2).XEndPoints;
+ytips2 = b(2).YEndPoints;
+labels2 = string(max_android_tp_delta_t_table);
+text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
+    'VerticalAlignment','top')
+
+ylabel('percent error from ground truth (%)')
+title("step true positives error compared to ground truth detection") 
+legend('matlab algorithm true positives','android algorithm true positives')
+
 %%
+figure()
+hold on
+plot([pseudo_confusion.delta_t], [pseudo_confusion.true_positive]);
+plot([pseudo_confusion.delta_t], [pseudo_confusion.false_negative]);
+plot([pseudo_confusion.delta_t], [pseudo_confusion.false_positive]);
+hold off
+% title('unique matlab step to ground truth step link
 
 % GroundTruth = timetable(Acceleration.timestamp);
 % GroundTruth.step_detect = [0; diff(Acceleration.truth_step_detect)];
