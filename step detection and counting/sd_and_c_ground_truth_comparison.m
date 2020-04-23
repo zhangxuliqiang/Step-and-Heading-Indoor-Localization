@@ -31,10 +31,12 @@ sd.ground_truth_steps = findSteps(sd.sd_comparison.sd_ground_truth_points, sd.Ac
 parfor result_index = 1 : 25
     debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
     delta_t = result_index * 0.02; 
-    pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+    matlab_pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+    android_pseudo_confusion(result_index) = TpFpFnCalc(sd.android_algo_steps.data, sd.ground_truth_steps.data,delta_t);
 end
 
-sd.pseudo_confusion = pseudo_confusion;
+sd.matlab_pseudo_confusion = matlab_pseudo_confusion;
+sd.android_pseudo_confusion = android_pseudo_confusion;
 
 gt2algo_comparisons = [gt2algo_comparisons; sd];
 
@@ -60,10 +62,10 @@ for comparison = gt2algo_comparisons'
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
-title('step counting comparison with lower standard deviation threshold') 
+title('step counting comparison') 
 legend('ground truth','matlab algorithm','android algorithm')
 
-%% Percentual accuracy
+% step counting percentual accuracy
 
 bar_comp_data = [];
 bar_names = {};
