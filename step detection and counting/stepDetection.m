@@ -1,7 +1,8 @@
 function [steps, Acceleration, sd_components] = stepDetection(target, debug)
 
+% if not user specified all steps will de displayed in command terminal
 if nargin < 2
-    debug = true;
+    debug_flag = true;
 end
 
 % determine which import to use depending on file extension
@@ -47,7 +48,7 @@ sd_components.acc0_magnitude = sqrt(Acceleration.X.^2 + Acceleration.Y.^2 + ...
     Acceleration.Z.^2);
 
 %% Threshold on standard deviation of acceleration magnitude
-debugDisp('     apply threshold on standard deviation',debug)
+debugDisp('     apply threshold on standard deviation',debug_flag)
 sd_components.acc0_magnitude_thres = NaN(height(sd_components),1);
 sd_components.acc0_magnitude_std = NaN(height(sd_components),1);
 
@@ -59,7 +60,7 @@ threshold_rows = sd_components(threshold_row_index,:);
 sd_components.acc0_magnitude_thres = sd_components.acc0_magnitude .* threshold_row_index;
 
 %% Filter Convolution process
-debugDisp('     Apply gaussian filter',debug)
+debugDisp('     Apply gaussian filter',debug_flag)
 
 sd_components.acc1_conv_gauss = NaN(height(sd_components),1);
 
@@ -72,7 +73,7 @@ half_window = floor(filt_window_size/2);
 sd_components(half_window+1:end-half_window,:).acc1_conv_gauss = conv_gauss_filter;
 
 %% Score convolution process
-debugDisp('     Apply scoring',debug)
+debugDisp('     Apply scoring',debug_flag)
 score_middle_index = round(score_window_size/2);
 
 kernel1 = ones(score_window_size,1).*(-1/(score_window_size - 1));
@@ -82,7 +83,7 @@ conv_score = conv(sd_components.acc1_conv_gauss, kernel1, 'same');
 sd_components.acc2_conv_score = conv_score;
 
 %% Detection stage:
-debugDisp('     Detect peaks',debug)
+debugDisp('     Detect peaks',debug_flag)
 % Detecting outliers with builtin matlab methods
 sd_components.acc3_quick_detect = NaN(height(sd_components),1);
 
@@ -96,7 +97,7 @@ threshold_rows = sd_components(cum_detect_score_row_index,:);
 sd_components(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
 
 %% find local maxima through sliding window
-debugDisp('     Find local maxima',debug)
+debugDisp('     Find local maxima',debug_flag)
 sd_components.acc4_builtin_max = NaN(height(sd_components),1);
 
 builtinmax = islocalmax(sd_components.acc3_quick_detect,'MinSeparation',seconds(pp_window_t), ...
