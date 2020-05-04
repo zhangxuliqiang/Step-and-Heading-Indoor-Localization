@@ -1,4 +1,4 @@
-function [steps, Acceleration, sd_components] = stepDetection(target, debug)
+function [steps, Data, sd_components] = stepDetection(target, debug_flag)
 
 % if not user specified all steps will de displayed in command terminal
 if nargin < 2
@@ -9,18 +9,18 @@ end
 [~, ~, fExt] = fileparts(target.file.name);
 switch lower(fExt)
     case '.csv'
-        Acceleration = CSVFile2Timetable(target);
+        Data = CSVFile2Timetable(target);
     case '.json'
-        Acceleration = JSONFile2Timetable(target);
+        Data = JSONFile2Timetable(target);
     otherwise
         error('Unexpected file extension: %s', fExt);
 end
 disp(['step detection calculation using: ' target.file.name])
-disp(['dataset size is:' int2str(height(Acceleration)) ' rows']);
-debugDisp('     import data',debug)
+disp(['dataset size is:' int2str(height(Data)) ' rows']);
+debugDisp('     import data',debug_flag)
 
 %% create timetable for processed data
-sd_components = timetable(Acceleration.Time);
+sd_components = timetable(Data.Time);
 
 %% optimal settings according to salvi et al
 
@@ -43,9 +43,9 @@ pp_window_t = 0.200; %s
 
 %% preprocessing: generate the norm of the acceleration signal
 % TODO: interpolation to get constant sampling time
-debugDisp('     calculate norm',debug)
-sd_components.acc0_magnitude = sqrt(Acceleration.X.^2 + Acceleration.Y.^2 + ...
-    Acceleration.Z.^2);
+debugDisp('     calculate norm',debug_flag)
+sd_components.acc0_magnitude = sqrt(Data.acc_X.^2 + Data.acc_Y.^2 + ...
+    Data.acc_Z.^2);
 
 %% Threshold on standard deviation of acceleration magnitude
 debugDisp('     apply threshold on standard deviation',debug_flag)
