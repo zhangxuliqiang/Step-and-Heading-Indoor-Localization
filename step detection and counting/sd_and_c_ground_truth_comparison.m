@@ -62,6 +62,7 @@ for comparison = gt2algo_comparisons'
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
+ylabel('number of steps')
 title('step counting comparison') 
 legend('ground truth','matlab algorithm','android algorithm')
 
@@ -84,6 +85,7 @@ for comparison = gt2algo_comparisons'
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
+ylabel('percentage error (%)')
 title("step counting error") 
 legend('matlab algorithm','android algorithm')
 
@@ -166,25 +168,37 @@ plot([pseudo_confusion.delta_t], [pseudo_confusion.false_positive]);
 hold off
 % title('unique matlab step to ground truth step link
 
-% GroundTruth = timetable(Acceleration.timestamp);
-% GroundTruth.step_detect = [0; diff(Acceleration.truth_step_detect)];
-% step_time = GroundTruth(gt_sd_index(:,1),:).Time;
-% %
-% 
-% clear figure(2)
-% figure(2)
-% hax=axes;
-% 
-% hold on
-% plot(step_detection.Time,step_detection.acc1_conv_gauss)
-% scatter(step_detection.Time,step_detection.acc4_builtin_max)
+%%
 
-% for i = 1:height
-%     step_time = TruthData(step_detect_time(i,1),:).timestamp;
-%     line([step_time step_time],get(hax,'YLim'),'Color',[1 0 0])
-% end
+figure()
+plot(sd_components.Time, sd_components.acc0_magnitude)
+hold on
+scatter(algo_steps.Time, algo_steps.acc0_magnitude)
+scatter(truth_steps.Time, truth_steps.acc0_magnitude)
+legend('acceleration norm','matlab algo','ground truth')
+hold off
 
-% for i = 1:length(slidding_window)
-%     line([slidding_window(i) slidding_window(i)],get(hax,'YLim'),'Color',[0 1 0])
-% end
-% hold off
+%%
+
+diff_truth = diff(comparison.ground_truth_steps.data.Time);
+figure()
+% histogram(diff_truth)
+plot(diff_truth)
+title('truth diff')
+
+diff_matalgo = diff(comparison.matlab_algo_steps.data.Time);
+figure()
+% histogram(diff_matalgo)
+plot(diff_matalgo)
+title('matlab diff')
+
+diff_algo = diff(comparison.android_algo_steps.data.Time);
+figure()
+% histogram(diff_algo)
+plot(diff_algo)
+title('algo diff')
+
+spreadfigures
+
+%%
+stackedplot(diff_truth, diff_matalgo, diff_algo)
