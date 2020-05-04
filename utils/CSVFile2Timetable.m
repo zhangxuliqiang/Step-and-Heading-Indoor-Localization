@@ -56,10 +56,10 @@ Data.Time = seconds(milli2sec);
 Data = table2timetable(Data);
 Data = unique(Data);
 
-% HIMU app specific, first sample is zero, this needs to be removed
+% HIMU app specific, first accelerometer sample is zero, this needs to be removed
 
-if Data(1,:).X == 0 && Data(1,:).Y == 0 && Data(1,:).Z == 0
-    Data(1,:) = [];
-end
+% if Data(1,2) == 0 && Data(1,3) == 0 && Data(1,4) == 0
+%     Data(1,:) = [];
+% end
 
 end
