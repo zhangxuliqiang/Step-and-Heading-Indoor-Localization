@@ -36,7 +36,7 @@ score_type = 'mean difference';
 score_window_size = 35;
 
 % detection
-detect_threshold = 1;
+detect_threshold = 1.1;
 
 % post-processing
 pp_window_t = 0.200; %s
@@ -54,7 +54,7 @@ sd_components.acc0_magnitude_std = NaN(height(sd_components),1);
 
 sd_components.acc0_magnitude_std = movstd(sd_components.acc0_magnitude,70);
 
-threshold_row_index = sd_components.acc0_magnitude_std > 2;
+threshold_row_index = sd_components.acc0_magnitude_std > 1;
 threshold_rows = sd_components(threshold_row_index,:);
 
 sd_components.acc0_magnitude_thres = sd_components.acc0_magnitude .* threshold_row_index;
