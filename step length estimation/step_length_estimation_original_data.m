@@ -20,7 +20,7 @@ file.name = sl_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["X","Y","Z"]);
+    ["acc_X","acc_Y","acc_Z"]);
 sl.name = file.name;
 [sl.steps, sl.Acceleration, sl.sd_components] = stepDetection(target, false);
 

@@ -16,7 +16,7 @@ file.name = gt_sd_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["X","Y","Z","algo_step_detect","truth_step_detect"]);
+    ["acc_X","acc_Y","acc_Z","algo_step_detect","truth_step_detect"]);
 
 sd.name = file.name;
 

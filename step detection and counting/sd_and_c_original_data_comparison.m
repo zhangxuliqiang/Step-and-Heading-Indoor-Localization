@@ -15,7 +15,7 @@ file.name = gt_sd_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["X","Y","Z"]);
+    ["acc_X","acc_Y","acc_Z"]);
 sd.name = file.name;
 [sd.steps, sd.Acceleration, sd.sd_components] = stepDetection(target, false);
 
@@ -88,7 +88,7 @@ file.name = 'backpocket1_60_steps_HIMU-2020-04-20_10-02-03.csv';
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["X","Y","Z"]);
+    ["acc_X","acc_Y","acc_Z"]);
 
 [target.steps, target.Acceleration, target.sd_components] = stepDetection(target, false);
 
@@ -101,7 +101,7 @@ hax=axes;
 
 hold on
 plot(target.sd_components.Time,target.sd_components.acc1_conv_gauss)
-scatter(target.steps.Time, target.steps.acc4_builtin_max)
+scatter(target.steps.data.Time, target.steps.data.acc4_builtin_max)
 hold off
 
 %%
