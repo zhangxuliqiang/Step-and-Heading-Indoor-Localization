@@ -37,15 +37,48 @@ sl_og_data_comparisons = [sl_og_data_comparisons; sl];
 
 end
 
-%%
+%% absolute distance travelled
 
-male.k1 = 0.415;
-male.k = 0.3139;
-
-test_height = 1.78;
-
+bar_comp_data = [];
+bar_names = {};
+n = 0;
+figure()
 for comparison = sl_og_data_comparisons'
-
-step_length = test_height.*male.k.*sqrt(comparison.sl_components.freq);
-step_length(1) = test_height.*male.k1;
+   n = n + 1;
+   % formatting name for nice plotting by replacing 
+   name_format = strrep(comparison.name,'_',' ');
+   
+   %cut the string at the char 5 so that date info is not seen in plot
+   name = strsplit(name_format,'H');
+   
+   %only use the name
+   bar_names(n) = {name{1}(1:end-1)}; 
+   bar_comp_data = [ bar_comp_data; comparison.distance_travelled];    
 end
+bar_names = categorical(bar_names);
+bar(bar_names,bar_comp_data)
+ylabel('distance travelled (m)')
+title('distance travelled based on steps counted and frequency step length') 
+
+%% absolute distance travelled
+
+bar_comp_data = [];
+bar_names = {};
+n = 0;
+figure()
+for comparison = sl_og_data_comparisons'
+   n = n + 1;
+   % formatting name for nice plotting by replacing 
+   name_format = strrep(comparison.name,'_',' ');
+   
+   %cut the string at the char 5 so that date info is not seen in plot
+   name = strsplit(name_format,'H');
+   
+   %only use the name
+   bar_names(n) = {name{1}(1:end-1)}; 
+   bar_comp_data = [ bar_comp_data; ((comparison.distance_travelled - 60.5) / 60.5)*100 ];    
+end
+bar_names = categorical(bar_names);
+bar(bar_names,bar_comp_data)
+ylabel('percentage error (%)')
+title('percentage error based on steps counted and frequency step length') 
