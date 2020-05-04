@@ -28,15 +28,15 @@ sd.sd_comparison = createTimeSeriesCompare(sd.Acceleration, sd.matlab_algo_steps
 sd.android_algo_steps = findSteps(sd.sd_comparison.sd_android_algo_points, sd.Acceleration);
 sd.ground_truth_steps = findSteps(sd.sd_comparison.sd_ground_truth_points, sd.Acceleration);
 
-parfor result_index = 1 : 25
-    debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
-    delta_t = result_index * 0.02; 
-    matlab_pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
-    android_pseudo_confusion(result_index) = TpFpFnCalc(sd.android_algo_steps.data, sd.ground_truth_steps.data,delta_t);
-end
-
-sd.matlab_pseudo_confusion = matlab_pseudo_confusion;
-sd.android_pseudo_confusion = android_pseudo_confusion;
+% parfor result_index = 1 : 25
+%     debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
+%     delta_t = result_index * 0.02; 
+%     matlab_pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+%     android_pseudo_confusion(result_index) = TpFpFnCalc(sd.android_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+% end
+% 
+% sd.matlab_pseudo_confusion = matlab_pseudo_confusion;
+% sd.android_pseudo_confusion = android_pseudo_confusion;
 
 gt2algo_comparisons = [gt2algo_comparisons; sd];
 
