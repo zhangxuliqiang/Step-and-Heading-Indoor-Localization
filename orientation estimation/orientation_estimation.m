@@ -2,10 +2,10 @@ clc
 close all
 clear variables
 
-debug = false;
+debug = true;
 
 file.directory = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/orientation estimation/';
-file.name = 'HIMU-2020-04-28_14-31-45';
+file.name = 'pitch_roll_yaw_HIMU-2020-04-23_11-25-37';
 file.time_unit = 1E-3;
 
 target.file = file;
@@ -18,7 +18,22 @@ target.dataSetProp = DataSetProp("Accelerometer","Time",(file.time_unit), ...
 orient.name = file.name;
 orient.data = CSVFile2Timetable(target);
 
-%% quaternion and convariance matrix
+%%
+
+location = struct('latitude', 45.187778, 'longitude', 5.726945, 'altitude', 200);
+date = struct('year', 2016, 'month', 05, 'day', 31);
+
+[magnetic.vector, ~, magnetic.declination, ~, magnetic.magnitude] = ...
+		wrldmagm(location.altitude, location.latitude, location.longitude, ...
+			decyear(date.year, date.month, date.day));
+        
+% Transform nanoTesla to microTesla
+magnetic.magnitude = magnetic.magnitude / 1000;
+magnetic.vector = magnetic.vector' / 1000;
+
+%%        
+
+% quaternion and convariance matrix
 
 prior_est = [1;0;0;0];
 prior_P = eye(4, 4);
@@ -44,10 +59,26 @@ acc = [orient.data.acc_X, orient.data.acc_Y, orient.data.acc_Z]';
 mag = [orient.data.mag_X, orient.data.mag_Y, orient.data.mag_Z]';
 Time = [seconds(orient.data.Time)];
 
-estimate = repmat(struct('Time', nan, ... 
-              'euler_prior_est',nan, ...
-              'euler_post_acc_est', nan, ...
-              'euler_post_mag_est', nan ), height(orient.data), 1 );
+if debug
+    estimate = repmat(struct('Time', nan, ...
+        'euler_prior_est',nan, ...
+        'euler_post_acc_est', nan, ...
+        'euler_post_mag_est', nan, ...
+        'prior_est', nan, ...
+        'prior_P', nan, ...        
+        'acc_error', nan, ...
+        'post_acc_est', nan, ...
+        'post_acc_P', nan, ...
+        'mag_error', nan, ...
+        'post_mag_est', nan, ...
+        'post_mag_P', nan ), height(orient.data), 1 );
+    
+else
+    estimate = repmat(struct('Time', nan, ...
+        'euler_prior_est',nan, ...
+        'euler_post_acc_est', nan, ...
+        'euler_post_mag_est', nan ), height(orient.data), 1 );
+end
 
 g = [0; 0; 9.82];
 dip_angle = 67.095;
@@ -90,12 +121,12 @@ for index = 1:1:height(orient.data)
     [post_mag_P, post_mag_est] = ...
         MeasurementUpdate(mag_error, post_acc_est, post_acc_P, calMag.R , H_mag);
     
+    x.euler_prior_est = q2euler(prior_est);
+    
     prior_est = post_mag_est;
     prior_P = post_mag_P; 
     %     --------------- SAVING ESTIMATE COMPONENTS ---------
     x.Time =Time(index);
-
-    x.euler_prior_est = q2euler(prior_est);
 
     x.euler_post_acc_est = q2euler(post_acc_est);
    
@@ -105,9 +136,11 @@ for index = 1:1:height(orient.data)
         x.prior_est = prior_est;
         x.prior_P = prior_P;
         
+        x.acc_error = acc_error;
         x.post_acc_est = post_acc_est;
         x.post_acc_P = post_acc_P;
         
+        x.mag_error = mag_error;
         x.post_mag_est = post_mag_est;
         x.post_mag_P = post_mag_P;
     end
@@ -122,6 +155,7 @@ end
 Data = struct2table(estimate);
 Data.Time = seconds(Data.Time);
 Data = table2timetable(Data);
+%
 
 prior_euler_angles = cell2mat(Data.euler_prior_est');
 post_acc_euler_angles = cell2mat(Data.euler_post_acc_est');
@@ -161,3 +195,10 @@ plot(orient.data.gyr_X)
 plot(orient.data.gyr_Y)
 plot(orient.data.gyr_Z)
 hold off
+
+%%
+close all
+i= 2;
+
+stackedplot([prior_euler_angles(i,:)', post_acc_euler_angles(i,:)'])
+
