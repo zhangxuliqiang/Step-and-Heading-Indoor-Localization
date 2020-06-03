@@ -1,28 +1,28 @@
-function estimate = ExtendedKalmanFilter(data, debug_flag)
+function estimate = ExtendedKalmanFilter(accSampled,gyrSampled,magSampled,magnetic, debug_flag)
 
 prior_est = [1;0;0;0];
 prior_P = eye(4, 4);
 
-calAcc.m = zeros(3, 1);
 calAcc.R = 1e-2 * eye(3);
 
-calGyr.m = zeros(3, 1);
 calGyr.R = 1e-5 * eye(3);
 
-calMag.m = zeros(3, 1);
 calMag.R = 0.5 * eye(3);
 
+acc = accSampled{:,:}';
+gyro = gyrSampled{:,:}'; 
+mag = magSampled{:,:}';
 
 
 % gyroscope time update
 
-dT = [0; seconds(diff(data.Time))];
+dT = [0; seconds(diff(accSampled.Time))];
 
 % transpose measurements to get column vectors for matrix operations
-gyro = [data.gyr_X, data.gyr_Y, data.gyr_Z]';
-acc = [data.acc_X, data.acc_Y, data.acc_Z]';
-mag = [data.mag_X, data.mag_Y, data.mag_Z]';
-Time = [seconds(data.Time)];
+% gyro = [data.gyr_X, data.gyr_Y, data.gyr_Z]';
+% acc = [data.acc_X, data.acc_Y, data.acc_Z]';
+% mag = [data.mag_X, data.mag_Y, data.mag_Z]';
+Time = [seconds(accSampled.Time)];
 
     
 if debug_flag
@@ -37,22 +37,24 @@ if debug_flag
         'post_acc_P', nan, ...
         'mag_error', nan, ...
         'post_mag_est', nan, ...
-        'post_mag_P', nan ), height(data), 1 );
+        'post_mag_P', nan ), height(accSampled), 1 );
     
 else
     estimate = repmat(struct('Time', nan, ...
         'euler_prior_est',nan, ...
         'euler_post_acc_est', nan, ...
-        'euler_post_mag_est', nan ), height(data), 1 );
+        'euler_post_mag_est', nan ), height(accSampled), 1 );
 end
 
-g = [0; 0; 9.82];
+g = [0; 0; 9.81];
 dip_angle = 67.095;
-mag_field = [cosd(dip_angle); 0 ; sind(dip_angle)];
+% mag_field = [cosd(dip_angle); 0 ; sind(dip_angle)];
 
-unit_mag = mag/norm(mag);
+mag_field =  magnetic.vector./norm(magnetic.vector);
 
-for index = 1:1:height(data)
+% unit_mag = mag/norm(mag);
+
+for index = 1:1:height(accSampled)
     % -------------  MOTION UPDATE -----------------------
     F = eye(4) + dT(index)/ 2.* Somega(gyro(:,index));
     prior_est = F* prior_est;
@@ -76,13 +78,17 @@ for index = 1:1:height(data)
         MeasurementUpdate(acc_error, prior_est, prior_P, calAcc.R, H_acc);
     
     % magnetometer measurement update
+    
+    % normalize magnetometer readings
+    mag(:,index)= mag(:,index)/norm(mag(:,index));
+    
     dRdq_mag = dRqdq(post_acc_est);
     H_mag = [dRdq_mag(:,:,1)'*mag_field, ...
              dRdq_mag(:,:,2)'*mag_field, ...
              dRdq_mag(:,:,3)'*mag_field, ...
              dRdq_mag(:,:,4)'*mag_field];
     
-    mag_error = unit_mag(:,index) - quat2rotmat(post_acc_est)' * mag_field;
+    mag_error = mag(:,index) - quat2rotmat(post_acc_est)' * mag_field;
     
     [post_mag_P, post_mag_est] = ...
         MeasurementUpdate(mag_error, post_acc_est, post_acc_P, calMag.R , H_mag);
