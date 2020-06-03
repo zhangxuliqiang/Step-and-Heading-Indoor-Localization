@@ -21,7 +21,8 @@ acc_calib_sample = loadAndroidDataset([dataset_directory 'calib_ac_samsung/']);
 magnetic = findMagneticField(location, date);
 
 %%
-[shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude] = calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, gyro_calib_sample,magnetic);
+[shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude] = ...
+    calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, gyro_calib_sample,magnetic);
 
 %%
 tic
@@ -32,12 +33,13 @@ toc
 %%
 [euler_angles(:, 1), euler_angles(:, 2), euler_angles(:, 3)] = quat2angle(estimate_att);
 
+%%
 [computed_euler_angles(:, 1), computed_euler_angles(:, 2), computed_euler_angles(:, 3)] = ...
-    quat2angle(dev_comp_attitude{:,:});
+    quat2angle(shs_sample.device_computed.attitude{:,:});
 
-figure()
-stackedplot(euler_angles)
-title('BART EKF')
+% figure()
+% stackedplot(euler_angles)
+% title('BART EKF')
 
 figure()
 stackedplot(computed_euler_angles)

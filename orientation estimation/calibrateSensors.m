@@ -27,8 +27,8 @@ calib_acc_data.acc_Y = calib_acc(2,:)';
 calib_acc_data.acc_Z = calib_acc(3,:)';
 
 % Gyroscope Calibration
-byr_bias = gyroCalib(gyro_calib_sample.raw_imu);
-calib_gyr = shs_sample.raw_imu.gyroscope{:,1:3}-byr_bias;
+gyr_bias = gyroCalib(gyro_calib_sample.raw_imu);
+calib_gyr = shs_sample.raw_imu.gyroscope{:,1:3}-gyr_bias;
 calib_gyr_data = timetable(shs_sample.raw_imu.gyroscope.Time);
 calib_gyr_data.gyr_X = calib_gyr(:,1);
 calib_gyr_data.gyr_Y = calib_gyr(:,2);
