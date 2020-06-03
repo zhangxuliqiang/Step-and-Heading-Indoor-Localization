@@ -1,4 +1,4 @@
-function [attitude] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
+function [attitude,x] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
 
     disp('Estimating Orientation')
 
@@ -7,7 +7,7 @@ function [attitude] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
         error('Bad input size of measurements vectors')
     end
 
-    dt = diff(timestamp);
+    dt = [0;diff(timestamp)];
     dataLength = length(timestamp);
 
 
@@ -24,12 +24,12 @@ function [attitude] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
     g = [0;0; 9.81];
     mag_field =  magnetic.vector./norm(magnetic.vector);
 
-    for i = 2:dataLength
+    for i = 1:dataLength
 
         % -------------  MOTION UPDATE -----------------------
-        F = eye(4) + dt(i-1)/ 2.* Somega(gyr(i,:)');
+        F = eye(4) + dt(i)/ 2.* Somega(gyr(i,:)');
         prior_est = F* prior_est;
-        Gu= dt(i-1)./ 2 *Sq(prior_est);
+        Gu= dt(i)./ 2 *Sq(prior_est);
         prior_est = prior_est / norm(prior_est);
         prior_P = F*prior_P*F' + Gu*cal_gyr_R*Gu';
 
@@ -64,15 +64,15 @@ function [attitude] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
         [post_mag_P, post_mag_est] = ...
             MeasurementUpdate(mag_error, post_acc_est, post_acc_P, cal_mag_R , H_mag);
 
-        x.euler_prior_est = q2euler(prior_est);
+        x(i).euler_prior_est = q2euler(prior_est);
 
         prior_est = post_mag_est;
         prior_P = post_mag_P;
         %     --------------- SAVING ESTIMATE COMPONENTS ---------
 
-        x.euler_post_acc_est = q2euler(post_acc_est);
+        x(i).euler_post_acc_est = q2euler(post_acc_est);
 
-        x.euler_post_mag_est = q2euler(post_mag_est);
+        x(i).euler_post_mag_est = q2euler(post_mag_est);
 
         attitude(i,:) = post_mag_est';
 
@@ -81,10 +81,10 @@ function [attitude] = Bart_EKF(timestamp, acc, gyr, mag, magnetic)
 
     % Come back to True North frame
         % Let's define MagRef and AccRef temporarly in Earth Magnetic Field frame
-
-    qMagneticToTrue = dcm2quat(rotz(magnetic.declination));
-    qTrueToMagnetic = quatinv(qMagneticToTrue);
-    attitude = quatmultiply(qMagneticToTrue, attitude);
+% 
+%     qMagneticToTrue = dcm2quat(rotz(magnetic.declination));
+%     qTrueToMagnetic = quatinv(qMagneticToTrue);
+%     attitude = quatmultiply(qMagneticToTrue, attitude);
 end
 
 
