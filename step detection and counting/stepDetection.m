@@ -1,23 +1,33 @@
-function [steps, data, sd_components] = stepDetection(target, debug_flag)
+function [steps, data, sd_components] = stepDetection(target, data_type, debug_flag)
+
+disp('performing step detection')
 
 % if not user specified all steps will de displayed in command terminal
 if nargin < 2
     debug_flag = true;
 end
 
-
+if strcmp(data_type, 'file')
 % determine which import to use depending on file extension
-[~, ~, fExt] = fileparts(target.file.name);
-switch lower(fExt)
-    case '.csv'
-        data = CSVFile2Timetable(target);
-    case '.json'
-        data = JSONFile2Timetable(target);
-    otherwise
-        error('Unexpected file extension: %s', fExt);
+    [~, ~, fExt] = fileparts(target.file.name);
+    switch lower(fExt)
+        case '.csv'
+            data = CSVFile2Timetable(target);
+        case '.json'
+            data = JSONFile2Timetable(target);
+        case '.txt'
+           data = SSVFile2Timetable(target);
+           timestamp = seconds(0.0810:1/100:291.3200);
+           data = retime(data,timestamp,'linear');
+        otherwise
+            error('Unexpected file extension: %s', fExt);
+    end
+    disp(['step detection calculation using: ' target.file.name])
+    
+elseif strcmp(data_type, 'data')
+    data = target;
 end
-disp(['step detection calculation using: ' target.file.name])
-disp(['dataset size is:' int2str(height(data)) ' rows']);
+debugDisp(['dataset size is:' int2str(height(data)) ' rows'], debug_flag);
 debugDisp('     import data',debug_flag)
 
 %% create timetable for processed data
