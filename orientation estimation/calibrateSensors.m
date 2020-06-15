@@ -1,12 +1,7 @@
-function [shs_sample, accSampled, gyrSampled, magSampled,dev_comp_attitude] = calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, gyro_calib_sample,magnetic)
+function [shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude,calib_mag_north_data] = ...
+    calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, gyro_calib_sample,mag_north_sample)
 
 disp('Calibrating sensor data')
-
-% Sensor's attitude from our iPhone app and from Android app are defined in magnetic north frame 
-qMagneticToTrue = dcm2quat(rotz(magnetic.declination));
-% shs_sample.device_computed.attitude{:,1:4} = ...
-%     quatmultiply(qMagneticToTrue, shs_sample.device_computed.attitude{:,1:4});
-
 
 % Magnetometer Calibration
 [mag_D, mag_bias]=magCalib(mag_calib_sample.raw_imu.magnetometer{:,1:3});
@@ -15,6 +10,13 @@ calib_mag_data = timetable(shs_sample.raw_imu.magnetometer.Time);
 calib_mag_data.mag_X = calib_mag(1,:)';
 calib_mag_data.mag_Y = calib_mag(2,:)';
 calib_mag_data.mag_Z = calib_mag(3,:)';
+
+% Magnetic North Calibration
+calib_mag_north = inv(mag_D)*(mag_north_sample.raw_imu.magnetometer{:,1:3}'- mag_bias);
+calib_mag_north_data = timetable(mag_north_sample.raw_imu.magnetometer.Time);
+calib_mag_north_data.mag_X = calib_mag_north(1,:)';
+calib_mag_north_data.mag_Y = calib_mag_north(2,:)';
+calib_mag_north_data.mag_Z = calib_mag_north(3,:)';
 
 % Accelerometer Calibration
 staticValues = findStaticRegions(acc_calib_sample.raw_imu);
