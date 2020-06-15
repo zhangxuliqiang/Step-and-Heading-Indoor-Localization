@@ -1,7 +1,7 @@
 function [mag_D, mag_bias]= magCalib(raw)
 %Estimate the local field norm from calibration position 
 
-local_field_norm=norm(mean(raw));
+local_field_norm=mean(vecnorm(raw'));
 raw=raw./local_field_norm;
 
 %Estimate calibration parameters
