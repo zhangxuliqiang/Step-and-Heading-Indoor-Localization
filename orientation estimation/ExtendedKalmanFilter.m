@@ -1,6 +1,9 @@
-function estimate = ExtendedKalmanFilter(accSampled,gyrSampled,magSampled,magnetic, debug_flag)
+function estimate = ExtendedKalmanFilter(prior_est, accSampled,gyrSampled,magSampled,magnetic, debug_flag)
 
-prior_est = [1;0;0;0];
+% prior_est = [1;2;3;4];
+% prior_est = [1;0;0;0];
+% prior_est = prior_est/norm(prior_est);
+
 prior_P = eye(4, 4);
 
 calAcc.R = 1e-2 * eye(3);
@@ -44,14 +47,17 @@ else
 end
 
 g = [0; 0; 9.81];
-dip_angle = 67.095;
-% mag_field = [cosd(dip_angle); 0 ; sind(dip_angle)];
 
-mag_field =  magnetic.vector./norm(magnetic.vector);
+% dip_angle = 67.095;
+% mag_field = [cosd(dip_angle); sind(dip_angle); 0];
+% mag_field =  magnetic.vector./norm(magnetic.vector);
 
-% unit_mag = mag/norm(mag);
+mag_vector = mean(magnetic{:,:});
+mag_vector(3) = 0;
+mag_field =  transpose(mag_vector./norm(mag_vector));
 
 for index = 1:1:height(accSampled)
+    
     if (mod(index/height(accSampled),0.1) < 0.00001)
         disp(['percentage complete: ', num2str(index/height(accSampled))])
     end
@@ -62,6 +68,9 @@ for index = 1:1:height(accSampled)
     prior_est = prior_est / norm(prior_est);
     prior_P = F*prior_P*F' + Gu*calGyr.R*Gu';
     
+    if debug_flag
+        x.prior_est = prior_est;
+    end
     % -------------- MEASUREMENT UPDATES ------------------
     
     % Accelerometer measurement update
