@@ -79,14 +79,29 @@ for i = 1: height(step_orient)
    positions = [positions, pos];
 end
 
-
+%%
 figure()
-hold on
-plot3([positions.x],[positions.y],step_orient.Time)
-hold off
+x = [positions.x];
+y = [positions.y];
+z = [seconds(step_orient.Time)]';
+col = z;  % This is the color, vary with x in this case.
+surface([x;x],[y;y],[z;z],[col;col],...
+        'facecol','no',...
+        'edgecol','interp',...
+        'linew',2);
+hcb = colorbar;
+title(hcb,'Time (sec)')
 xlabel('X position from initial (meters)')
 ylabel('Y position from initial (meters)')
-xlim([-150 50])
-ylim([-50 150])
 title('step and heading system walking around the block')
-axis square
+% ylim([-50, 150])
+% xlim([-150,50])
+
+%% Performance evaluation
+
+% acc_error_plotter = [estimate.acc_error];
+% 
+% figure()
+% plot([acc_error_plotter{:,:}])
+
+
