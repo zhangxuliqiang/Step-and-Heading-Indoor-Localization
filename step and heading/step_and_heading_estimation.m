@@ -48,17 +48,24 @@ shs.steps.data.step_length = test_height.*male.k.*sqrt(shs.sl_components.freq);
 shs.steps.data.step_length(1) = test_height.*male.k1;
 shs.est_distance = sum(shs.steps.data.step_length);
 
+%% Estimating orientation
+prior_est = [1.5*pi,0,0];
+% prior_est = [0,0,0];
+prior_est = transpose(eul2quat(prior_est));
 
-%%
+estimate = ExtendedKalmanFilter(prior_est, ...
+                                accSampled, gyrSampled, magSampled, ...
+                                calib_mag_north, true);
+
 euler_angles = timetable(shs.data.Time);
-[euler_angles.yaw, euler_angles.pitch, euler_angles.roll] = quat2angle([estimate.post_mag_est{:,:}]');
-% [euler_angles.yaw, euler_angles.pitch, euler_angles.roll] = quat2angle(estimate_att);
+[euler_angles.yaw, euler_angles.pitch, euler_angles.roll] =  ...
+    quat2angle([estimate.post_mag_est{:,:}]');
 
 positions = [];
 prev_x = 0;
 prev_y = 0;
 
-euler_angles.yaw = euler_angles.yaw + pi/2;
+% euler_angles.yaw = euler_angles.yaw + pi/2;
 
 step_orient = euler_angles(shs.steps.data.Time, :);
 
