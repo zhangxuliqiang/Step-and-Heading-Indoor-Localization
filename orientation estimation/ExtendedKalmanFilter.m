@@ -27,9 +27,8 @@ Time = [seconds(accSampled.Time)];
     
 if debug_flag
     estimate = repmat(struct('Time', nan, ...
-        'euler_prior_est',nan, ...
-        'euler_post_acc_est', nan, ...
-        'euler_post_mag_est', nan, ...
+        'final_q',nan, ...
+        'final_P', nan, ...
         'prior_est', nan, ...
         'prior_P', nan, ...        
         'acc_error', nan, ...
@@ -41,9 +40,7 @@ if debug_flag
     
 else
     estimate = repmat(struct('Time', nan, ...
-        'euler_prior_est',nan, ...
-        'euler_post_acc_est', nan, ...
-        'euler_post_mag_est', nan ), height(accSampled), 1 );
+        'final_q',nan, 'final_P', nan), height(accSampled), 1 );
 end
 
 g = [0; 0; 9.81];
@@ -93,19 +90,25 @@ for index = 1:1:height(accSampled)
     [post_mag_P, post_mag_est] = ...
         MeasurementUpdate(mag_error, post_acc_est, post_acc_P, calMag.R , H_mag);
     
-    x.euler_prior_est = q2euler(prior_est);
+    % Renormalize quaternion and covariance
     
-    prior_est = post_mag_est;
-    prior_P = post_mag_P; 
+    final_q  = post_mag_est/norm(post_mag_est);
+    final_q = final_q * sign(final_q(1));
+    J = (1/norm(post_mag_est)^3)*(post_mag_est*post_mag_est');
+    final_P = J*post_mag_P*J';
+    
+    prior_est = final_q;
+    prior_P = final_P; 
+    
+%     prior_est = post_mag_est;
+%     prior_P = post_mag_P;
+    
     %     --------------- SAVING ESTIMATE COMPONENTS ---------
     x.Time =Time(index);
-
-    x.euler_post_acc_est = q2euler(post_acc_est);
-   
-    x.euler_post_mag_est = q2euler(post_mag_est);
+    x.final_q = final_q;
+    x.final_P = final_P;
     
     if debug_flag
-        x.prior_est = prior_est;
         x.prior_P = prior_P;
         
         x.acc_error = acc_error;
