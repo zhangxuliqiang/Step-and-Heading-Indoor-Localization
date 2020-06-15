@@ -1,6 +1,6 @@
 clc
 close all
-% clear variables
+clear variables
 
 folder_name = '3_times_around_the_block/';
 
@@ -10,24 +10,27 @@ date = struct('year', 2020, 'month', 05, 'day', 7);
 
 %%% load Data %%%
 shs_sample = loadAndroidDataset(['../datasets/' folder_name]);
-%
+
+% load calibration data
 mag_calib_sample = loadAndroidDataset('../datasets/20200602_154324_calib_mag/');
 gyro_calib_sample = loadAndroidDataset('../datasets/calib_gyro_samsung/');
 acc_calib_sample = loadAndroidDataset('../datasets/calib_ac_samsung/');
 
+%% load magnetic north data
+
+magnetic_north_sample = loadAndroidDataset('../datasets/magnetic_north/');
+
 % Create context from location, date and coordinateSystem
-magnetic = findMagneticField(location, date);
+% magnetic = findMagneticField(location, date);
 
-% Calibrating Sensor Data 
-[shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude] = calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, gyro_calib_sample,magnetic);
-
-%% Estimating orientation
-
-[estimate_att,debug] = Bart_EKF(seconds(accSampled.Time), accSampled{:,:}, gyrSampled{:,:}, magSampled{:,:}, magnetic);
 %%
-clc
-estimate = ExtendedKalmanFilter(accSampled, gyrSampled, magSampled, magnetic, true);
-%% Step detection
+% Calibrating Sensor Data 
+[shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude,calib_mag_north] = ...
+    calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, ...
+                     gyro_calib_sample,magnetic_north_sample);
+
+
+% Step detection
 [shs.steps, shs.data, shs.sd_components] = stepDetection(accSampled, 'data' , false);
 
 % Step length estimation
