@@ -52,6 +52,9 @@ mag_field =  magnetic.vector./norm(magnetic.vector);
 % unit_mag = mag/norm(mag);
 
 for index = 1:1:height(accSampled)
+    if (mod(index/height(accSampled),0.1) < 0.00001)
+        disp(['percentage complete: ', num2str(index/height(accSampled))])
+    end
     % -------------  MOTION UPDATE -----------------------
     F = eye(4) + dT(index)/ 2.* Somega(gyro(:,index));
     prior_est = F* prior_est;
