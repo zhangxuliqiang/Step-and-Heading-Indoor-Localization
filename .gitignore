@@ -2,8 +2,8 @@
 
 /archive
 /pictures
-.mat
-
+**/*.mat
+**/*.zip
 
 # Created by https://www.gitignore.io/api/linux,matlab
 # Edit at https://www.gitignore.io/?templates=linux,matlab
