@@ -43,7 +43,7 @@ else
         'final_q',nan, 'final_P', nan), height(accSampled), 1 );
 end
 
-g = [0; 0; 9.81];
+g = [0; 0; -9.81];
 
 % dip_angle = 67.095;
 % mag_field = [cosd(dip_angle);sind(dip_angle); 0 ];
@@ -80,7 +80,7 @@ for index = 1:1:height(accSampled)
     % transpose rotation matrix of body frame to navigation frame to get from
     % navigation to body frame
     
-    acc_error = acc(:,index) - quat2rotmat(prior_est)' * g;
+    acc_error = acc(:,index) - (-quat2rotmat(prior_est)' * g);
     
     [post_acc_P, post_acc_est] = ...
         MeasurementUpdate(acc_error, prior_est, prior_P, calAcc_R, H_acc);
