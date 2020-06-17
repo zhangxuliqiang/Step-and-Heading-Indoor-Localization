@@ -1,21 +1,18 @@
 function estimate = ExtendedKalmanFilter(prior_est, accSampled,gyrSampled,magSampled,magnetic, debug_flag)
 
-% prior_est = [1;2;3;4];
-% prior_est = [1;0;0;0];
-% prior_est = prior_est/norm(prior_est);
 
-prior_P = eye(4, 4);
 
-calAcc.R = 1e-2 * eye(3);
+prior_P = 0.0001 * eye(4);
 
-calGyr.R = 1e-5 * eye(3);
+calAcc_R = 0.012^2 * eye(3);
 
-calMag.R = 0.5 * eye(3);
+calGyr_R = 0.0033^2 * eye(3);
+
+calMag_R = 0.72^2 * eye(3);
 
 acc = accSampled{:,:}';
 gyro = gyrSampled{:,:}'; 
 mag = magSampled{:,:}';
-
 
 % gyroscope time update
 
@@ -49,11 +46,11 @@ end
 g = [0; 0; 9.81];
 
 % dip_angle = 67.095;
-% mag_field = [cosd(dip_angle); sind(dip_angle); 0];
+% mag_field = [cosd(dip_angle);sind(dip_angle); 0 ];
 % mag_field =  magnetic.vector./norm(magnetic.vector);
 
 mag_vector = mean(magnetic{:,:});
-mag_vector(3) = 0;
+% mag_vector(3) = 0;
 mag_field =  transpose(mag_vector./norm(mag_vector));
 
 for index = 1:1:height(accSampled)
@@ -62,11 +59,11 @@ for index = 1:1:height(accSampled)
         disp(['percentage complete: ', num2str(index/height(accSampled))])
     end
     % -------------  MOTION UPDATE -----------------------
-    F = eye(4) + dT(index)/ 2.* Somega(gyro(:,index));
+    F = eye(4) + 0.5*(dT(index)* Somega(gyro(:,index)));
     prior_est = F* prior_est;
     Gu= dT(index)./ 2 *Sq(prior_est);
     prior_est = prior_est / norm(prior_est);
-    prior_P = F*prior_P*F' + Gu*calGyr.R*Gu';
+    prior_P = F*prior_P*F' + Gu*calGyr_R*Gu';
     
     if debug_flag
         x.prior_est = prior_est;
@@ -75,8 +72,10 @@ for index = 1:1:height(accSampled)
     
     % Accelerometer measurement update
     dRdq_acc = dRqdq(prior_est);
-    H_acc = [dRdq_acc(:,:,1)'*g, dRdq_acc(:,:,2)'*g,...
-        dRdq_acc(:,:,3)'*g, dRdq_acc(:,:,4)'*g];
+    H_acc = [-dRdq_acc(:,:,1)'*g,...
+             -dRdq_acc(:,:,2)'*g,...
+             -dRdq_acc(:,:,3)'*g,...
+             -dRdq_acc(:,:,4)'*g];
     
     % transpose rotation matrix of body frame to navigation frame to get from
     % navigation to body frame
@@ -84,12 +83,12 @@ for index = 1:1:height(accSampled)
     acc_error = acc(:,index) - quat2rotmat(prior_est)' * g;
     
     [post_acc_P, post_acc_est] = ...
-        MeasurementUpdate(acc_error, prior_est, prior_P, calAcc.R, H_acc);
+        MeasurementUpdate(acc_error, prior_est, prior_P, calAcc_R, H_acc);
     
     % magnetometer measurement update
     
     % normalize magnetometer readings
-    mag(:,index)= mag(:,index)/norm(mag(:,index));
+%     mag(:,index)= mag(:,index)/norm(mag(:,index));
     
     dRdq_mag = dRqdq(post_acc_est);
     H_mag = [dRdq_mag(:,:,1)'*mag_field, ...
@@ -100,7 +99,7 @@ for index = 1:1:height(accSampled)
     mag_error = mag(:,index) - quat2rotmat(post_acc_est)' * mag_field;
     
     [post_mag_P, post_mag_est] = ...
-        MeasurementUpdate(mag_error, post_acc_est, post_acc_P, calMag.R , H_mag);
+        MeasurementUpdate(mag_error, post_acc_est, post_acc_P, calMag_R , H_mag);
     
     % Renormalize quaternion and covariance
     
@@ -109,11 +108,11 @@ for index = 1:1:height(accSampled)
     J = (1/norm(post_mag_est)^3)*(post_mag_est*post_mag_est');
     final_P = J*post_mag_P*J';
     
-    prior_est = final_q;
-    prior_P = final_P; 
+%     prior_est = final_q;
+%     prior_P = final_P; 
     
-%     prior_est = post_mag_est;
-%     prior_P = post_mag_P;
+    prior_est = post_mag_est;
+    prior_P = post_mag_P;
     
     %     --------------- SAVING ESTIMATE COMPONENTS ---------
     x.Time =Time(index);
