@@ -1,8 +1,4 @@
-function [mag_D, mag_bias]= magCalib(raw)
-%Estimate the local field norm from calibration position 
-
-local_field_norm=mean(vecnorm(raw'));
-raw=raw./local_field_norm;
+function [mag_invD, mag_bias]= magCalib(raw)
 
 %Estimate calibration parameters
 N=size(raw,1);
@@ -16,18 +12,17 @@ cvx_begin
     variable A(3,3)
     variable b(3,1)
     variable c(1,1)
-    minimize( norm(M*[vec(A); b; c]) )
+    minimize(norm( M * [vec(A) ; b ; c] , 2 ) )
     subject to
     trace(A) == 1
     A-0.0001*eye(3) == semidefinite(3)
 cvx_end
 
-DTD = inv(0.25 * ( b' / A * b ) - c) * A;
-D = chol(DTD);
-bias = -0.5* ( A \ b );
+invDT_invD = inv(0.25 * b' *inv(A) * b - c) *A;
+invD = chol(invDT_invD);
+bias = -0.5* inv(A) * b ;
 
-%Compensate for normalization effects in calibration
-mag_bias= bias.*local_field_norm;
-mag_D =D;
+mag_bias = bias;
+mag_invD = invD;
 
 end
