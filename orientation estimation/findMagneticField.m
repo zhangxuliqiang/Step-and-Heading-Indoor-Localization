@@ -16,5 +16,6 @@ function magnetic = findMagneticField(location, date)
     
     magnetic.vector = rotmatNEDtoENU * magnetic_vector;
     magnetic.declination = -magnetic_declination;
+    magnetic.inclination = magnetic_inclination;
 
 end
