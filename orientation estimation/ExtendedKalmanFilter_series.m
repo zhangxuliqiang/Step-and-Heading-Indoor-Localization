@@ -1,8 +1,10 @@
 function estimate = ExtendedKalmanFilter_series(est, accSampled,gyrSampled,magSampled,magnetic, debug_flag)
 
-accSampled.Type(:) = "ACC";
-magSampled.Type(:) = "MAG";
-gyrSampled.Type(:) = "GYR";
+Types = categorical({'GYR','ACC', 'MAG'});
+
+accSampled.Type(:) = Types(2);
+magSampled.Type(:) = Types(3);
+gyrSampled.Type(:) = Types(1);
 
 combined_raw = [accSampled; magSampled; gyrSampled];
 combined_raw = sortrows(combined_raw);
@@ -13,11 +15,11 @@ calAcc_R = 0.012 * eye(3);
 
 calGyr_R = 0.0033^2 * eye(3);
 
-calMag_R = 0.01 * eye(3);
+calMag_R = 0.005 * eye(3);
 
-acc = accSampled{:,:}';
-gyro = gyrSampled{:,:}'; 
-mag = magSampled{:,:}';
+% acc = accSampled{:,:}';
+% gyro = gyrSampled{:,:}'; 
+% mag = magSampled{:,:}';
 combined = [combined_raw.X, combined_raw.Y, combined_raw.Z]';
 type = [combined_raw.Type];
 
@@ -53,17 +55,16 @@ counter = 0;
 
 for index = 1:1:height(combined_raw)
     
-%     if mod(round(index/height(combined),2)*100,10) == 0  && ...
-%             round(index/height(combined))~= 0
+    if mod(round(index/height(combined_raw),2)*100,10) == 0  && ...
+            round(index/height(combined_raw))~= 0
         disp(['percentage complete: ' num2str(round(index/height(combined_raw),2)*100)])
-%     end
+    end
     
     y = combined(:,index) ;
     
     switch type(index)
         
-    
-        case "GYR"
+        case Types(1)
             counter = counter +1;
             
             % -------------  MOTION UPDATE -----------------------
@@ -77,7 +78,7 @@ for index = 1:1:height(combined_raw)
                 x.prior_est = est;
             end
     % -------------- MEASUREMENT UPDATES ------------------
-        case "MAG"
+        case Types(3)
             dRdq_mag = dRqdq(est);
             H_mag = [dRdq_mag(:,:,1)'*mag_field, ...
                      dRdq_mag(:,:,2)'*mag_field, ...
@@ -100,9 +101,9 @@ for index = 1:1:height(combined_raw)
             est  = est/norm(est);
         %     est = est * sign(est(1));
             J = (1/norm(est)^3)*(est*est');
-            P = J*P*J';
+%             P = J*P*J';
             
-        case "ACC"
+        case Types(2)
             % Accelerometer measurement update
             dRdq_acc = dRqdq(est);
             H_acc = [-dRdq_acc(:,:,1)'*g,...
@@ -126,7 +127,7 @@ for index = 1:1:height(combined_raw)
             est  = est/norm(est);
         %     est = est * sign(est(1));
             J = (1/norm(est)^3)*(est*est');
-            P = J*P*J';
+%             P = J*P*J';
     end
         
 %     --------------- SAVING ESTIMATE COMPONENTS ---------
