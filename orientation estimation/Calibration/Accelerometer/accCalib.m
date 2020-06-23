@@ -1,8 +1,8 @@
-function [acc_D,acc_bias] = accCalib(data)
+function [acc_invD,acc_bias] = accCalib(data)
 
 N = size(data,1);
 M=ones(N,13);
-data = data./9.81;
+% data = data./9.81;
 
 for i=1:N
     M(i,1:9)=kron(data(i,:),data(i,:));
@@ -19,8 +19,9 @@ cvx_begin
     A-0.0001*eye(3) == semidefinite(3)
 cvx_end
 
-DTD = inv(0.25 * ( b' / A * b ) - c) * A;
-acc_D = chol(DTD);
+invDT_invD = inv(0.25 * ( b' / A * b ) - c) * A;
+acc_invD = chol(invDT_invD);
+
 acc_bias = -0.5* ( A \ b );
-acc_bias = acc_bias.*9.81;
+% acc_bias = acc_bias.*9.81;
 end

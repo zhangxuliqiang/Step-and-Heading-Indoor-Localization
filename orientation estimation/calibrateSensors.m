@@ -4,15 +4,15 @@ function [shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude,cali
 disp('Calibrating sensor data')
 
 % Magnetometer Calibration
-[mag_D, mag_bias]=magCalib(mag_calib_sample.raw_imu.magnetometer{:,1:3});
-calib_mag = inv(mag_D)*(shs_sample.raw_imu.magnetometer{:,1:3}'- mag_bias);
+[mag_invD, mag_bias]=magCalib(mag_calib_sample.raw_imu.magnetometer{:,1:3});
+calib_mag = mag_invD*(shs_sample.raw_imu.magnetometer{:,1:3}'- mag_bias);
 calib_mag_data = timetable(shs_sample.raw_imu.magnetometer.Time);
 calib_mag_data.mag_X = calib_mag(1,:)';
 calib_mag_data.mag_Y = calib_mag(2,:)';
 calib_mag_data.mag_Z = calib_mag(3,:)';
 
 % Magnetic North Calibration
-calib_mag_north = inv(mag_D)*(mag_north_sample.raw_imu.magnetometer{:,1:3}'- mag_bias);
+calib_mag_north = mag_invD*(mag_north_sample.raw_imu.magnetometer{:,1:3}'- mag_bias);
 calib_mag_north_data = timetable(mag_north_sample.raw_imu.magnetometer.Time);
 calib_mag_north_data.mag_X = calib_mag_north(1,:)';
 calib_mag_north_data.mag_Y = calib_mag_north(2,:)';
@@ -21,8 +21,9 @@ calib_mag_north_data.mag_Z = calib_mag_north(3,:)';
 % Accelerometer Calibration
 staticValues = findStaticRegions(acc_calib_sample.raw_imu);
 
-[acc_D,acc_bias] = accCalib(staticValues);
-calib_acc = inv(acc_D)*(shs_sample.raw_imu.accelerometer{:,1:3}'- acc_bias);
+[acc_invD,acc_bias] = accCalib(staticValues);
+calib_acc = acc_invD*(shs_sample.raw_imu.accelerometer{:,1:3}'- acc_bias);
+calib_acc = calib_acc.* 9.81;
 calib_acc_data = timetable(shs_sample.raw_imu.accelerometer.Time);
 calib_acc_data.acc_X = calib_acc(1,:)';
 calib_acc_data.acc_Y = calib_acc(2,:)';
