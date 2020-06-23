@@ -56,8 +56,8 @@ prior_est = [dev_comp_attitude{1,:}]';
 estimate1 = ExtendedKalmanFilter_series(prior_est, ...
                                 accSampled, gyrSampled, magSampled, ...
                                 calib_mag_north, false);
-                          
-[og_positions, step_orient] = plotTrajectory([estimate1.final_q{:,:}]',shs);
+                          %%
+[og_positions, step_orient] = plotTrajectory(estimate1,shs);
  %%
  close all
 [dev_com_positions,~] = plotTrajectory([dev_comp_attitude{:,:}],shs);

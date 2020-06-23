@@ -14,13 +14,13 @@ function aData = loadAndroidDataset(directory)
 
 	% Raw data
 	raw_imu = aData.raw_imu;
-    gyr_var_names = ["gyr_X","gyr_Y","gyr_Z"];
+    gyr_var_names = ["X","Y","Z"];
 	raw_imu.gyroscope = loadIfExists(directory, 'gyroscope.txt', gyr_var_names);
     
-    acc_var_names = ["acc_X","acc_Y","acc_Z"];
+    acc_var_names = ["X","Y","Z"];
 	raw_imu.accelerometer = loadIfExists(directory, 'accelerometer.txt', acc_var_names); 
     
-    mag_var_names = ["mag_X","mag_Y","mag_Z"];
+    mag_var_names = ["X","Y","Z"];
 	raw_imu.magnetometer = loadIfExists(directory, 'magnetometer.txt',mag_var_names);
 
 

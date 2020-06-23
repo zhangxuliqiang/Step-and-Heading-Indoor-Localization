@@ -1,19 +1,19 @@
 function [positions,step_orient] = plotTrajectory(orient_estimate,shs)
 
-euler_angles = timetable(shs.data.Time);
+euler_angles = timetable(orient_estimate.Time);
 
 [euler_angles.yaw, euler_angles.pitch, euler_angles.roll] =  ...
-    quat2angle(orient_estimate);
+    quat2angle([orient_estimate.est{:,:}]');
 
 euler_angles.yaw = euler_angles.yaw +pi/2;
 
-step_orient = euler_angles(shs.steps.data.Time, :);
+step_orient = unique(euler_angles(shs.steps.data.Time, :));
 
 positions = [];
 prev_x = 0;
 prev_y = 0;
 
-for i = 1: height(step_orient)
+for i = 1: height(shs.steps.data)
    pos.x = prev_x + cos(step_orient(i,:).yaw).* shs.steps.data.step_length(i); 
    prev_x = pos.x;
    
@@ -27,7 +27,7 @@ end
 figure()
 x = [positions.x];
 y = [positions.y];
-z = [seconds(step_orient.Time)]';
+z = [seconds(shs.steps.data.Time)]';
 col = z;  % This is the color, vary with x in this case.
 surface([x;x],[y;y],[z;z],[col;col],...
         'facecol','no',...
