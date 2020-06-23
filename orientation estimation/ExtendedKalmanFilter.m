@@ -2,13 +2,13 @@ function estimate = ExtendedKalmanFilter(prior_est, accSampled,gyrSampled,magSam
 
 
 
-prior_P = 0.0001 * eye(4);
+prior_P = 0.01 * eye(4);
 
-calAcc_R = 0.012^2 * eye(3);
+calAcc_R = 0.012 * eye(3);
 
-calGyr_R = 0.0033^2 * eye(3);
+calGyr_R = 0.0033 * eye(3);
 
-calMag_R = 0.72^2 * eye(3);
+calMag_R = 0.001 * eye(3);
 
 acc = accSampled{:,:}';
 gyro = gyrSampled{:,:}'; 
@@ -87,9 +87,6 @@ for index = 1:1:height(accSampled)
     
     % magnetometer measurement update
     
-    % normalize magnetometer readings
-%     mag(:,index)= mag(:,index)/norm(mag(:,index));
-    
     dRdq_mag = dRqdq(post_acc_est);
     H_mag = [dRdq_mag(:,:,1)'*mag_field, ...
              dRdq_mag(:,:,2)'*mag_field, ...
@@ -103,21 +100,17 @@ for index = 1:1:height(accSampled)
     
     % Renormalize quaternion and covariance
     
-    final_q  = post_mag_est/norm(post_mag_est);
-    final_q = final_q * sign(final_q(1));
-    J = (1/norm(post_mag_est)^3)*(post_mag_est*post_mag_est');
-    final_P = J*post_mag_P*J';
     
 %     prior_est = final_q;
 %     prior_P = final_P; 
-    
+%     
     prior_est = post_mag_est;
     prior_P = post_mag_P;
     
     %     --------------- SAVING ESTIMATE COMPONENTS ---------
     x.Time =Time(index);
-    x.final_q = final_q;
-    x.final_P = final_P;
+    x.final_q = post_mag_est;
+    x.final_P = post_mag_P;
     
     if debug_flag
         x.prior_P = prior_P;
