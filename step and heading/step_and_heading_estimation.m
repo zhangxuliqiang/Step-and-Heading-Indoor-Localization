@@ -4,6 +4,8 @@ clear variables
 
 folder_name = '3_times_around_the_block/';
 
+% folder_name = 'around_the_block_samsung/';
+
 % Location and date of data
 location = struct('latitude', 52.0056634, 'longitude', 4.36677, 'altitude', 10);
 date = struct('year', 2020, 'month', 05, 'day', 7);
@@ -21,7 +23,7 @@ acc_calib_sample = loadAndroidDataset('../datasets/calib_ac_samsung/');
 magnetic_north_sample = loadAndroidDataset('../datasets/magnetic_north/');
 
 % Create context from location, date and coordinateSystem
-% magnetic = findMagneticField(location, date);
+magnetic = findMagneticField(location, date);
 
 %%
 % Calibrating Sensor Data 
@@ -30,7 +32,7 @@ magnetic_north_sample = loadAndroidDataset('../datasets/magnetic_north/');
                      gyro_calib_sample,magnetic_north_sample);
 
 
-% Step detection
+%% Step detection
 [shs.steps, shs.data, shs.sd_components] = stepDetection(accSampled, 'data' , false);
 
 % Step length estimation
