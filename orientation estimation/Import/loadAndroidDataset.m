@@ -1,5 +1,5 @@
 
-function aData = loadAndroidDataset(directory)
+function aData = loadAndroidDataset(directory, name)
 
 	aData = AcquisitionData;
 	aData.provider = 'Android';
@@ -14,6 +14,9 @@ function aData = loadAndroidDataset(directory)
 
 	% Raw data
 	raw_imu = aData.raw_imu;
+    var_names = ["X","Y","Z"];
+    raw_imu.combined = loadIfExists(directory, name ,var_names);
+    
     gyr_var_names = ["gyr_X","gyr_Y","gyr_Z"];
 	raw_imu.gyroscope = loadIfExists(directory, 'gyroscope.txt', gyr_var_names);
     
@@ -57,7 +60,7 @@ function outputMatrix = loadIfExists(directory, file_name, variable_names)
         variable_names);
         
 	if exist(file_path, 'file') == 2
-		outputMatrix = SSVFile2Timetable(target);
+		outputMatrix = TSVFile2Timetable(target);
 	else
 		outputMatrix = [];
 %         disp([file_path ' is not available'])
