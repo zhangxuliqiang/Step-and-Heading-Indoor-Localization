@@ -1,14 +1,14 @@
-function estimate = ExtendedKalmanFilter_alt(prior_est, accSampled,gyrSampled,magSampled,magnetic, debug_flag)
+function estimate = ExtendedKalmanFilter_alt(prior_est, accSampled,gyrSampled,magSampled,magnetic, variance, debug_flag)
 
 
 
 prior_P = 0.01 * eye(4);
 
-calAcc_R = 0.012 * eye(3);
+calAcc_R = variance.acc * eye(3);
 
-calGyr_R = 0.0033 * eye(3);
+calGyr_R = variance.gyr * eye(3);
 
-calMag_R = 0.0005 * eye(3);
+calMag_R = variance.mag * eye(3);
 
 acc = accSampled{:,:}';
 gyro = gyrSampled{:,:}'; 
@@ -49,8 +49,8 @@ for index = 1:1:height(accSampled)
     end
     % -------------  MOTION UPDATE -----------------------
     F = eye(4) + 0.5*(dT(index)* Somega(gyro(:,index)));
-    prior_est = F* prior_est;
     Gu= dT(index)./ 2 *Sq(prior_est);
+    prior_est = F* prior_est;    
     prior_est = prior_est / norm(prior_est);
     prior_P = F*prior_P*F' + Gu*calGyr_R*Gu';
     
@@ -101,7 +101,7 @@ for index = 1:1:height(accSampled)
     x.final_q = final_q;
     x.final_P = final_P;
     x.error = error;
-spot
+
     
     estimate(index) = x;
     

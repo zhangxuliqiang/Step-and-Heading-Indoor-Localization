@@ -51,11 +51,26 @@ shs.steps.data.step_length(1) = test_height.*male.k1;
 shs.est_distance = sum(shs.steps.data.step_length);
 
 %% Estimating orientation
+
+folder_name = 'finding_noise/';
+noise_sample = loadAndroidDataset(['../datasets/' folder_name]);
+
+[~, acc_noise, gyr_noise, mag_noise, ~,~] = ...
+    calibrateSensors(noise_sample, mag_calib_sample, acc_calib_sample, ...
+                     gyro_calib_sample,magnetic_north_sample);
+
+
+variance.acc = max(var(acc_noise{:,:}));
+variance.mag = max(var(mag_noise{:,:}));
+variance.gyr = max(var(gyr_noise{:,:}));
+
+%%
+
 prior_est = [dev_comp_attitude{1,:}]';
 
 estimate1 = ExtendedKalmanFilter_alt(prior_est, ...
                                 accSampled, gyrSampled, magSampled, ...
-                                calib_mag_north, false);
+                                calib_mag_north, variance, false);
                           
 [og_positions, step_orient] = plotTrajectory([estimate1.final_q{:,:}]',shs);
  %%
