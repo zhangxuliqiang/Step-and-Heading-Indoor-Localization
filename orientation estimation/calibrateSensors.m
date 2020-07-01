@@ -45,7 +45,7 @@ mag = calib_mag_data;
 firstTimestamp = max([acc.Time(1), gyr.Time(1), mag.Time(1)]);
 lastTimestamp = min([acc.Time(end), gyr.Time(end), mag.Time(end)]);
 
-dT = seconds(1/100);
+dT = seconds(1/50);
 timestamp = firstTimestamp:dT:lastTimestamp;
 
 accSampled = retime(acc,timestamp,'linear');
