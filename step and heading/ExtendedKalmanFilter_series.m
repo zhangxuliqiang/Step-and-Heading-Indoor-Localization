@@ -1,33 +1,34 @@
-function estimate = ExtendedKalmanFilter_series(est, accSampled,gyrSampled,magSampled,magnetic, debug_flag)
+function estimate = ExtendedKalmanFilter_series(est, acc,gyr,mag,magnetic, variance, debug_flag)
 
 Types = categorical({'GYR','ACC', 'MAG'});
 
-accSampled.Type(:) = Types(2);
-magSampled.Type(:) = Types(3);
-gyrSampled.Type(:) = Types(1);
+gyr.Type(:) = Types(1);
+acc.Type(:) = Types(2);
+mag.Type(:) = Types(3);
 
-combined_raw = [accSampled; magSampled; gyrSampled];
+combined_raw = [acc; mag; gyr];
 combined_raw = sortrows(combined_raw);
 
 P = 0.01 * eye(4);
 
-calAcc_R = 0.012 * eye(3);
+calAcc_R = variance.acc * eye(3);
 
-calGyr_R = 0.0033 * eye(3);
+calGyr_R = variance.gyr * eye(3);
 
-calMag_R = 0.01 * eye(3);
+calMag_R = variance.mag * eye(3);
 
 combined = [combined_raw.X, combined_raw.Y, combined_raw.Z]';
 type = [combined_raw.Type];
 
-dT = [0; seconds(diff(gyrSampled.Time))];
+dT = [0; seconds(diff(gyr.Time))];
 Time = [seconds(combined_raw.Time)];
 
     
 estimate = repmat(struct('Time', nan, ...
                          'est',nan, ...
                          'P', nan,...
-                         'error', nan),...
+                         'error', nan,...
+                         'type', nan),...
                          height(combined_raw), 1 );
 
 
@@ -40,9 +41,9 @@ counter = 0;
 
 for index = 1:1:height(combined_raw)
     
-    if mod(round(index/height(combined_raw),2)*100,10) == 0  && ...
-            round(index/height(combined_raw)*100) ~= 0
-        disp(['percentage complete: ' num2str(round(index/height(combined_raw),2)*100)])
+    progress = round(index/height(combined_raw)*100,2);
+    if mod(progress,10) == 0  && round(progress) ~= 0
+        disp(['percentage complete: %d ',  num2str(round(index/height(combined_raw),2)*100)]);
     end
     
     y = combined(:,index) ;
@@ -54,8 +55,8 @@ for index = 1:1:height(combined_raw)
             
             % -------------  MOTION UPDATE -----------------------
             F = eye(4) + 0.5*(dT(counter)* Somega(y));
-            est = F* est;
             Gu= dT(counter)./ 2 *Sq(est);
+            est = F* est;            
             est = est / norm(est);
             P = F*P*F' + Gu*calGyr_R*Gu';
 
@@ -89,7 +90,7 @@ for index = 1:1:height(combined_raw)
             est  = est/norm(est);
         %     est = est * sign(est(1));
             J = (1/norm(est)^3)*(est*est');
-%             P = J*P*J';
+            P = J*P*J';
 
          case Types(3)
             dRdq_mag = dRqdq(est);
@@ -114,7 +115,7 @@ for index = 1:1:height(combined_raw)
             est  = est/norm(est);
         %     est = est * sign(est(1));
             J = (1/norm(est)^3)*(est*est');
-%             P = J*P*J';
+            P = J*P*J';
     end
         
 %     --------------- SAVING ESTIMATE COMPONENTS ---------
@@ -122,6 +123,7 @@ for index = 1:1:height(combined_raw)
     x.est = est;
     x.P = P;
     x.error = error;
+    x.type = type(index);
 
     
     estimate(index) = x;
@@ -132,4 +134,47 @@ estimate = struct2table(estimate);
 estimate.Time = seconds(estimate.Time);
 estimate = table2timetable(estimate);
     
+end
+
+function R = quat2rotmat(q)
+    % Convert a quaternion to a rotation matrix
+    q0=q(1);   q1=q(2);   q2=q(3);   q3=q(4);
+    R = [2*(q0^2+q1^2) - 1  2*(q1*q2-q0*q3)    2*(q1*q3+q0*q2);
+        2*(q1*q2+q0*q3)    2*(q0^2+q2^2) - 1  2*(q2*q3-q0*q1);
+        2*(q1*q3-q0*q2)    2*(q2*q3+q0*q1)    2*(q0^2+q3^2) - 1];
+end
+
+function dRdq = dRqdq(q)
+    % Derivative of a rotation matrix wrt a quaternion
+   q0=q(1);   q1=q(2);   q2=q(3);   q3=q(4);
+   dRdq(:,:,1) = 2* [2*q0   -q3    q2;
+              q3  2*q0   -q1;
+             -q2    q1  2*q0];
+   dRdq(:,:,2) = 2* [2*q1    q2    q3;
+              q2     0   -q0;
+              q3    q0     0];
+   dRdq(:,:,3) = 2* [   0    q1    q0;
+              q1  2*q2    q3;
+             -q0    q3     0];
+   dRdq(:,:,4) = 2* [   0   -q0    q1;
+              q0     0    q2;
+              q1    q2  2*q3];
+end
+
+function S=Somega(w)
+% The matrix S(omega) defined in (13.11b)
+   wx=w(1);   wy=w(2);   wz=w(3);
+   S=[ 0  -wx  -wy  -wz;
+      wx    0   wz  -wy;
+      wy  -wz    0   wx;
+      wz   wy  -wx    0];
+end
+
+function S=Sq(q)
+% The matrix S(q) defined in (13.11c)
+   q0=q(1);   q1=q(2);   q2=q(3);   q3=q(4);
+   S=[-q1 -q2 -q3;
+       q0 -q3  q2;
+       q3  q0 -q1;
+      -q2  q1  q0];
 end
