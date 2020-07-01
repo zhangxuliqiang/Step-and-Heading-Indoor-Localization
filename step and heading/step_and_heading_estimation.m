@@ -27,7 +27,7 @@ magnetic = findMagneticField(location, date);
 
 %%
 % Calibrating Sensor Data 
-[shs_sample, accSampled, gyrSampled, magSampled, dev_comp_attitude,calib_mag_north] = ...
+[~, ~, accSampled, gyrSampled, magSampled, dev_comp_attitude,calib_mag_north] = ...
     calibrateSensors(shs_sample, mag_calib_sample, acc_calib_sample, ...
                      gyro_calib_sample,magnetic_north_sample);
 
@@ -51,18 +51,39 @@ shs.steps.data.step_length(1) = test_height.*male.k1;
 shs.est_distance = sum(shs.steps.data.step_length);
 
 %% Estimating orientation
+
+folder_name = 'finding_noise/';
+noise_sample = loadAndroidDataset(['../datasets/' folder_name]);
+
+[~, ~, acc_noise, gyr_noise, mag_noise, ~,~] = ...
+    calibrateSensors(noise_sample, mag_calib_sample, acc_calib_sample, ...
+                     gyro_calib_sample,magnetic_north_sample);
+
+
+variance.acc = max(var(acc_noise{:,:}));
+variance.mag = max(var(mag_noise{:,:}));
+variance.gyr = max(var(gyr_noise{:,:}));
+
+%%
 prior_est = [dev_comp_attitude{1,:}]';
 
 estimate1 = ExtendedKalmanFilter_series(prior_est, ...
                                 accSampled, gyrSampled, magSampled, ...
-                                calib_mag_north, false);
-                          %%
-[og_positions, step_orient] = plotTrajectory(estimate1,shs);
- %%
- close all
-[dev_com_positions,~] = plotTrajectory([dev_comp_attitude{:,:}],shs);
+                                calib_mag_north, variance, false);
+
+
+clear target
+target = timetable(estimate1.Time);
+target.est = [estimate1.est{:,:}]';
+
+[og_positions, step_orient] = plotTrajectory(target,shs);
 %%
-[og_positions, step_orient] = plotTrajectory([estimate1.final_q{:,:}]',shs);
+ target1 = timetable(shs_sample.device_computed.attitude.Time);
+ target1.est = [shs_sample.device_computed.attitude{:,:}];
+
+[dev_com_positions,dev_com_step_orient] = plotTrajectory(target1,shs);
+%%
+% [og_positions, step_orient] = plotTrajectory([estimate1.final_q{:,:}]',shs);
 
 
 
