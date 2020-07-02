@@ -9,7 +9,7 @@ mag.Type(:) = Types(3);
 combined_raw = [acc; mag; gyr];
 combined_raw = sortrows(combined_raw);
 
-P = 0.01 * eye(4);
+P = 0.0001 * eye(4);
 
 calAcc_R = variance.acc * eye(3);
 
@@ -43,7 +43,7 @@ for index = 1:1:height(combined_raw)
     
     progress = round(index/height(combined_raw)*100,2);
     if mod(progress,10) == 0  && round(progress) ~= 0
-        disp(['percentage complete: %d ',  num2str(round(index/height(combined_raw),2)*100)]);
+        disp(['percentage complete: ',  num2str(round(index/height(combined_raw),2)*100)]);
     end
     
     y = combined(:,index) ;
@@ -60,9 +60,6 @@ for index = 1:1:height(combined_raw)
             est = est / norm(est);
             P = F*P*F' + Gu*calGyr_R*Gu';
 
-            if debug_flag
-                x.prior_est = est;
-            end
     % -------------- MEASUREMENT UPDATES ------------------
        
             
@@ -81,18 +78,14 @@ for index = 1:1:height(combined_raw)
             R = [calAcc_R];
 
             error = y - y_hat;
-
-            S = H*P*H' + R;
-            K = (P*H') / S;
-            P = P - K*S*K';
-            est = est + K* error;
-
-            est  = est/norm(est);
-        %     est = est * sign(est(1));
-            J = (1/norm(est)^3)*(est*est');
-            P = J*P*J';
-
+            
+            if norm(y) < 10
+                [est,P] = measUpdate(est,P,error,H,R);            
+                est = est/norm(est);
+            end
+            
          case Types(3)
+             % magnetometer measurement update
             dRdq_mag = dRqdq(est);
             H_mag = [dRdq_mag(:,:,1)'*mag_field, ...
                      dRdq_mag(:,:,2)'*mag_field, ...
@@ -106,16 +99,10 @@ for index = 1:1:height(combined_raw)
             R = [ calMag_R];
 
             error = y - y_hat;
+            
+            [est,P] = measUpdate(est,P,error,H,R);
+            est = est/norm(est);
 
-            S = H*P*H' + R;
-            K = (P*H') / S;
-            P = P - K*S*K';
-            est = est + K* error;
-
-            est  = est/norm(est);
-        %     est = est * sign(est(1));
-            J = (1/norm(est)^3)*(est*est');
-            P = J*P*J';
     end
         
 %     --------------- SAVING ESTIMATE COMPONENTS ---------
@@ -134,6 +121,14 @@ estimate = struct2table(estimate);
 estimate.Time = seconds(estimate.Time);
 estimate = table2timetable(estimate);
     
+end
+
+function [est,P] = measUpdate(est,P,error,H,R)
+    % EKF measurement update
+    S = H*P*H' + R;
+    K = (P*H') / S;
+    P = P - K*S*K'; 
+    est = est + K*error;
 end
 
 function R = quat2rotmat(q)
