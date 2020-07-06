@@ -65,7 +65,8 @@ variance.mag = max(var(mag_noise{:,:}));
 variance.gyr = max(var(gyr_noise{:,:}));
 
 %%
-prior_est = [dev_comp_attitude{1,:}]';
+
+prior_est = [dev_comp_attitude{4,:}]';
 
 estimate1 = ExtendedKalmanFilter_series(prior_est, ...
                                 accSampled, gyrSampled, magSampled, ...
