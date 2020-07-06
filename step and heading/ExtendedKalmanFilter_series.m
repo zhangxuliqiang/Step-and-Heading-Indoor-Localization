@@ -9,7 +9,7 @@ mag.Type(:) = Types(3);
 combined_raw = [acc; mag; gyr];
 combined_raw = sortrows(combined_raw);
 
-P = 0.0001 * eye(4);
+P = 0.01 * eye(4);
 
 calAcc_R = variance.acc * eye(3);
 
@@ -59,7 +59,7 @@ for index = 1:1:height(combined_raw)
             est = F* est;            
             est = est / norm(est);
             P = F*P*F' + Gu*calGyr_R*Gu';
-
+            error = nan;
     % -------------- MEASUREMENT UPDATES ------------------
        
             
@@ -79,7 +79,7 @@ for index = 1:1:height(combined_raw)
 
             error = y - y_hat;
             
-            if norm(y) < 10
+            if norm(y) < 10 && norm(y) > 9
                 [est,P] = measUpdate(est,P,error,H,R);            
                 est = est/norm(est);
             end
@@ -100,8 +100,10 @@ for index = 1:1:height(combined_raw)
 
             error = y - y_hat;
             
-            [est,P] = measUpdate(est,P,error,H,R);
-            est = est/norm(est);
+             if norm(y) < 1.2 && norm(y) > 0.9
+                 [est,P] = measUpdate(est,P,error,H,R);
+                 est = est/norm(est);
+             end
 
     end
         
