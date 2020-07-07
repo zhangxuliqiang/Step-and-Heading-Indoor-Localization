@@ -55,8 +55,8 @@ pp_window_t = 0.200; %s
 %% preprocessing: generate the norm of the acceleration signal
 % TODO: interpolation to get constant sampling time
 debugDisp('     calculate norm',debug_flag)
-sd_components.acc0_magnitude = sqrt(data.acc_X.^2 + data.acc_Y.^2 + ...
-    data.acc_Z.^2);
+sd_components.acc0_magnitude = sqrt(data.X.^2 + data.Y.^2 + ...
+    data.Z.^2);
 
 %% Threshold on standard deviation of acceleration magnitude
 debugDisp('     apply threshold on standard deviation',debug_flag)
