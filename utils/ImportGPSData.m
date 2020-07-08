@@ -1,4 +1,4 @@
-function locationgps = ImportGPSData(file)
+function Data = ImportGPSData(file)
 
 %% Import data from text file
 % Script for importing data from the following text file:
@@ -15,7 +15,7 @@ opts.DataLines = [7, Inf];
 opts.Delimiter = " ";
 
 % Specify column names and types
-opts.VariableNames = ["elapsedtimesystem", "elapsedtimesensor", "latitude", "longitude", "altitude", "bearing", "accuracy", "speed"];
+opts.VariableNames = ["Time", "elapsedtimesensor", "latitude", "longitude", "altitude", "bearing", "accuracy", "speed"];
 opts.VariableTypes = ["double", "double", "double", "double", "double", "double", "double", "double"];
 
 % Specify file level properties
@@ -25,8 +25,11 @@ opts.ConsecutiveDelimitersRule = "join";
 opts.LeadingDelimitersRule = "ignore";
 
 % Import the data
-locationgps = readtable(file, opts);
-
+Data = readtable(file, opts);
+Data.Time = (Data.Time(:)-Data.Time(1));
+Data.Time = seconds(Data.Time);
+Data = table2timetable(Data);
+Data = unique(Data);
 
 %% Clear temporary variables
 clear opts
