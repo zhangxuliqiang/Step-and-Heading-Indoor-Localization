@@ -106,12 +106,45 @@ for std_orient = 0.02:0.03:0.2
     orient_pf(std_orient_counter).sl_pf = sl_pf;
 end
 
-    sl_pf(counter).completed = sum([realizations.percent_complete] == 1);
-end
-
 %%
-% close all
-trajectory = og_positions;
+close all
+plot_index = 1;
+sub_plot_length = length(orient_pf) + 1;
+std_sl_x_axis  = 0.1:0.1:1; 
+
+ t = tiledlayout(length(orient_pf),1);
+ 
+for i = 1:length(orient_pf)
+    
+    specific_sl_pf = orient_pf(i).sl_pf;
+    
+    bc_mean_error = [];
+    bc_mean_std = [];
+    
+    for std_sl_index = 1:10
+        track_completed_index = [specific_sl_pf(std_sl_index).realizations.percent_complete] == 1;
+        bc_mean_error = [bc_mean_error; [specific_sl_pf(std_sl_index).realizations.pf_mean_error].*track_completed_index];
+        bc_mean_std = [bc_mean_std; [specific_sl_pf(std_sl_index).realizations.pf_mean_std_error].*track_completed_index];
+    end
+    
+    ax(i) = nexttile;
+    b = bar(ax(i),std_sl_x_axis,bc_mean_error);
+    title(['orientation std: '  num2str(orient_pf(i).std_orient)])
+    set(ax(i),'fontsize',10)
+    ylim([0,100])
+    
+    xtips2 = b(5).XEndPoints-0.005;
+    ytips2 = 70.*ones(size(b(2).XEndPoints));
+    labels2 = string([specific_sl_pf.completed]);
+    text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom','color','b', 'fontsize',6)
+    
+end
+title(t,'mean error from corresponding gps point')
+xlabel(t,'step length std (m)')
+ylabel(t,'Error (m)')
+xticklabels(ax(1:end-1),{})
+t.TileSpacing = 'compact';
 
 figure()
 hold on
