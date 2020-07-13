@@ -51,8 +51,8 @@ gps_data = ImportGPSData("/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code 
                [gps_data(1,:).latitude, gps_data(1,:).longitude], ...
               0, 0 );
 
-gps_data.x_pos = p(:,2) + start_point_meter(2);
-gps_data.y_pos = p(:,1) + start_point_meter(1);
+gps_data.x_pos = gps_position(:,2) + start_point_meter(2);
+gps_data.y_pos = gps_position(:,1) + start_point_meter(1);
           
 figure()
 hold on
@@ -64,38 +64,47 @@ hold off
 figure()
 geoplot( gps_data.latitude,gps_data.longitude, 'g-*')
 
-%%
-
 gps_data  = retime(gps_data,shs.steps.data.Time,'linear');
-
-
-figure()
-hold on
-show(map)
-plot(gps_data.x_pos,gps_data.y_pos)
-hold off 
 
 %% distribute particles over map
 
 nr_particles = 100;
+std_orient_counter = 0;
 
-sl_pf = [];
-counter = 0;
+orient_pf = [];
 
-for std_sl = 0.1:0.1:1
-    counter = counter +1;
-    fprintf('delta_sl = %f \n', std_sl )
-    realizations =[];
+for std_orient = 0.02:0.03:0.2
+    std_orient_counter = std_orient_counter +1;
     
-    for itteration = 1:10
-        fprintf('    itteration: %i' ,itteration )
+    fprintf('std_orient = %f \n', std_orient )
+    
+    sl_pf = [];
+    sl_std_counter = 0;
+    
+    for std_sl = 0.1:0.1:1
+        sl_std_counter = sl_std_counter +1;
+        fprintf('       delta_sl = %f \n', std_sl )
+        realizations =[];
         
-       [particle_lists, final_timestep] = ParticleFilter(start_point_meter,nr_particles, step_orient, std_sl, map);
-        
-        fprintf('    pf completed: %f \n',final_timestep/height(step_orient))
-        realizations(itteration).percent_complete = final_timestep/height(step_orient);
-
+        for itteration = 1:10
+            fprintf('       itteration: %i' ,itteration )
+            
+            [particle_lists, final_timestep] = ParticleFilter(start_point_meter,nr_particles, step_orient, std_sl,std_orient, map);
+            
+            fprintf('       pf completed: %f \n',final_timestep/height(step_orient))
+            realizations(itteration).percent_complete = final_timestep/height(step_orient);
+            
+            [realizations(itteration).pf_mean_error, ...
+                realizations(itteration).pf_mean_std_error] = ...
+                CompareToGPS(particle_lists,gps_data);
+        end
+        sl_pf(sl_std_counter).std_sl = std_sl;
+        sl_pf(sl_std_counter).realizations = realizations;
+        sl_pf(sl_std_counter).completed = sum([realizations.percent_complete] == 1);
     end
+    orient_pf(std_orient_counter).std_orient = std_orient;
+    orient_pf(std_orient_counter).sl_pf = sl_pf;
+end
 
     sl_pf(counter).completed = sum([realizations.percent_complete] == 1);
 end
