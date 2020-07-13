@@ -146,26 +146,22 @@ ylabel(t,'Error (m)')
 xticklabels(ax(1:end-1),{})
 t.TileSpacing = 'compact';
 
-figure()
-hold on
-show(map)
-x = [trajectory.x] + + start_point_meter(2);
-y = [trajectory.y] + start_point_meter(1);
-plot(x,y, 'y')
-hold off
 %%
-
+clc
 [specific_pf, final_timestep] = ParticleFilter(start_point_meter,nr_particles, ...
-                                                step_orient, 4/10, map);
+                                                step_orient, 0.1, 0.08, map);
 disp(['pf completed:' num2str(final_timestep/height(step_orient))])
 
-%%
-for i = 1 :10: length(specific_pf) 
-    gps_point = gps_data(specific_pf(i).Time,:); 
+[pf_mean_error,pf_mean_std_error] = CompareToGPS(specific_pf,gps_data);
+
+
+
+for ii = 1 :10: length(specific_pf) 
+    gps_point = gps_data(specific_pf(ii).Time,:); 
     figure(1)
     show(map)
     hold on
-    scatter([specific_pf(i).particle_lists.x]', [specific_pf(i).particle_lists.y]', '.')
+    scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.')
     scatter(gps_point.x_pos, gps_point.y_pos, 'or')
     hold off
 end
