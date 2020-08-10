@@ -79,7 +79,7 @@ for index = 1:1:height(combined_raw)
 
             error = y - y_hat;
             
-            if norm(y) < 10 && norm(y) > 9
+            if norm(y) < 10.3 && norm(y) > 9.3
                 [est,P] = measUpdate(est,P,error,H,R);            
                 est = est/norm(est);
             end
@@ -100,7 +100,7 @@ for index = 1:1:height(combined_raw)
 
             error = y - y_hat;
             
-             if norm(y) < 1.2 && norm(y) > 0.9
+             if norm(y) < 1.1 && norm(y) > 0.9
                  [est,P] = measUpdate(est,P,error,H,R);
                  est = est/norm(est);
              end
