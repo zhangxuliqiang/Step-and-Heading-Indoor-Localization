@@ -1,4 +1,3 @@
-
 %% generating particle filter map
 
 % defining the scale of the map
@@ -18,7 +17,7 @@ start_point = [row_size - mean(row),mean(col)];
 
 white(row,col) = 0;
 
-fig = figure(1);
+fig = figure();
 imshow(image)
 
 
@@ -42,7 +41,7 @@ hold off
 % measure_distance = ginput(2);
 % norm(measure_distance(:,2)-measure_distance(:,1))
 
-%%
+%% Import GPS Data
 
 gps_data = ImportGPSData("/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/3_times_around_the_block/location-gps.txt");
 
@@ -66,8 +65,8 @@ geoplot( gps_data.latitude,gps_data.longitude, 'g-*')
 
 gps_data  = retime(gps_data,shs.steps.data.Time,'linear');
 
-%% distribute particles over map
-
+%% itterate over both orientation and step length std to find best combination
+clc
 nr_particles = 100;
 std_orient_counter = 0;
 
