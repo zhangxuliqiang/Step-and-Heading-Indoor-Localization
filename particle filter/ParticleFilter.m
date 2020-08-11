@@ -23,13 +23,10 @@ for timestep = 1: height(step_orient)
         break
     end
     
-    % resampling
-    
-    if (length(particle_list)/nr_particles) < (2/3)
+    % resampling    
         
         new_particle_index = randi(length(particle_list),nr_particles,1);
         particle_list = particle_list(new_particle_index);
-    end
     
     % time update
     
