@@ -82,7 +82,7 @@ for std_orient = 0.02:0.03:0.2
     
     for std_sl = 0.1:0.1:1
         sl_std_counter = sl_std_counter +1;
-        fprintf('       delta_sl = %f \n', std_sl )
+        fprintf('       std_sl = %f \n', std_sl )
         realizations =[];
         
         for itteration = 1:10
