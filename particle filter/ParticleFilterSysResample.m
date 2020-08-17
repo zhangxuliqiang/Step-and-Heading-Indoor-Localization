@@ -1,6 +1,6 @@
 function [output, final_timestep] = ParticleFilterSysResample(start_point_meter, ...
-                                    nr_particles, step_orient, std_sl, ...
-                                    std_orient, map, gps_tol)
+    nr_particles, step_orient, std_sl, ...
+    std_orient, map, gps_data)
 
 delta_angle = [0; diff(step_orient.yaw)];
 
@@ -11,6 +11,12 @@ yaw = step_orient(1,:).yaw * ones(nr_particles,1);
 weight = 1/nr_particles * ones(nr_particles,1);
 
 particle_list = table(x_pos, y_pos, yaw, weight);
+
+
+
+% GPS half normal distribution
+
+dist_prob = makedist('HalfNormal','mu',0,'sigma',2);
 
 output = [];
 
@@ -28,28 +34,18 @@ for timestep = 1: height(step_orient)
     
     particle_list = MeasUpdate(particle_list, ~invalid_points);
     
-%     if sum((gps_tol.Time - step_orient(timestep,:).Time) < 0.01) == 1
-%         dist = 1;
-%     end
-
-    % resampling
-    resample_index = [];
-    N = height(particle_list);
-    Q = cumsum(particle_list.weight);
+    gps_index = find(gps_data.Time == step_orient(timestep,:).Time,1);
     
-    T = ([1:N]-1 + rand(1))/N;
-    
-    i=1;
-    j=1;
-    
-    while (i<=N)
-        if (T(i)<Q(j))
-            resample_index(i)=j;
-            i=i+1;
-        else
-            j=j+1;
-        end
-        
+    if ~isempty(gps_index)
+         
+         gps_position = [gps_data(gps_index,:).x_pos, gps_data(gps_index,:).y_pos];        
+         dist_to_gps = vecnorm(particle_positions - gps_position,2,2);
+         distance_weighting = pdf(dist_prob,dist_to_gps);
+         
+         particle_list = MeasUpdate(particle_list, distance_weighting);
+         
+    end   
+       
     particle_list = Resample(particle_list);
     
     % time update
