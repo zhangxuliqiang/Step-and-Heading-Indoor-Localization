@@ -1,8 +1,8 @@
 function [pf_mean_error,pf_mean_std_error] = CompareToGPS(specific_pf,gps_data)
 
 for i = 1:length(specific_pf)
-    pf_x_positions = [specific_pf(i).particle_lists.x_pos]';
-    pf_y_positions = [specific_pf(i).particle_lists.y_pos]';
+    pf_x_positions = specific_pf(i).particle_lists.x_pos;
+    pf_y_positions = specific_pf(i).particle_lists.y_pos;
     gps_point = gps_data(specific_pf(i).Time,:);
     
     x_pos_error = pf_x_positions - gps_point.x_pos;
