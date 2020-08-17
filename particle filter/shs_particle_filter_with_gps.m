@@ -36,7 +36,7 @@ show(map)
 scatter(start_point_meter(2),start_point_meter(1),'bx')
 hold off
 
-%% Import GPS Data
+% Import GPS Data
 
 gps_data = ImportGPSData("/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/3_times_around_the_block/location-gps.txt");
 
@@ -59,21 +59,100 @@ geoplot( gps_data.latitude,gps_data.longitude, 'g-*')
 
 gps_data  = retime(gps_data,shs.steps.data.Time,'linear');
 
-
-%%
-
-gps_time_tol = withtol(step_orient.Time, seconds(0.01));
-gps_tol = gps_data(gps_time_tol,:);
-
-%%
+%% itterate over both orientation and step length std to find best combination
 clc
+nr_particles = 100;
+std_orient_counter = 0;
+
+orient_pf = [];
+
+for std_orient = 0.02:0.03:0.2
+    std_orient_counter = std_orient_counter +1;
+    
+    fprintf('std_orient = %f \n', std_orient )
+    
+    sl_pf = [];
+    sl_std_counter = 0;
+    
+    for std_sl = 0.1:0.1:0.5
+        sl_std_counter = sl_std_counter +1;
+        fprintf('       std_sl = %f \n', std_sl )
+        realizations =[];
+        
+        for itteration = 1:10
+            fprintf('       itteration: %i' ,itteration )
+            
+            [particle_lists, final_timestep] = ParticleFilterSysResample(start_point_meter,nr_particles, step_orient, std_sl,std_orient, map);
+            
+            fprintf('       pf completed: %f, ',final_timestep/height(step_orient))
+            realizations(itteration).percent_complete = final_timestep/height(step_orient);
+            
+            [realizations(itteration).pf_mean_error, ...
+                realizations(itteration).pf_mean_std_error] = ...
+                CompareToGPS(particle_lists,gps_data);
+             fprintf(' pf_mean_error: %f \n', realizations(itteration).pf_mean_error)
+        end
+        sl_pf(sl_std_counter).std_sl = std_sl;
+        sl_pf(sl_std_counter).realizations = realizations;
+        sl_pf(sl_std_counter).completed = sum([realizations.percent_complete] == 1);
+    end
+    orient_pf(std_orient_counter).std_orient = std_orient;
+    orient_pf(std_orient_counter).sl_pf = sl_pf;
+end
+
+%%
+close all
+plot_index = 1;
+sub_plot_length = length(orient_pf) + 1;
+std_sl_x_axis  = 0.1:0.1:0.5; 
+
+ t = tiledlayout(length(orient_pf),1);
+ 
+for i = 1:length(orient_pf)
+    
+    specific_sl_pf = orient_pf(i).sl_pf;
+    
+    bc_mean_error = [];
+    bc_mean_std = [];
+    
+    for std_sl_index = 1:length(specific_sl_pf)
+        track_completed_index = [specific_sl_pf(std_sl_index).realizations.percent_complete] == 1;
+        bc_mean_error = [bc_mean_error; [specific_sl_pf(std_sl_index).realizations.pf_mean_error].*track_completed_index];
+        bc_mean_std = [bc_mean_std; [specific_sl_pf(std_sl_index).realizations.pf_mean_std_error].*track_completed_index];
+    end
+    
+    ax(i) = nexttile;
+    b = bar(ax(i),std_sl_x_axis,bc_mean_error);
+    title(['orientation std: '  num2str(orient_pf(i).std_orient)])
+    set(ax(i),'fontsize',10)
+    ylim([0,100])
+    
+    xtips2 = b(i).XEndPoints-0.005;
+    ytips2 = 70.*ones(size(b(2).XEndPoints));
+    labels2 = string([specific_sl_pf.completed]);
+    text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom','color','b', 'fontsize',6)
+    
+end
+title(t,'mean error from corresponding gps point')
+xlabel(t,'step length std (m)')
+ylabel(t,'Error (m)')
+xticklabels(ax(1:end-1),{})
+t.TileSpacing = 'compact';
+
+
+%%
+
+clc
+gps_tol = gps_data(1:100:end,:);
 nr_particles = 100;
 
 [specific_pf, final_timestep] = ParticleFilterSysResample(start_point_meter,nr_particles, ...
-                                                step_orient, 0.06, 0.02, map, gps_tol);
+                                                step_orient, 0.2, 0.02, map, gps_tol);
 disp(['pf completed:' num2str(final_timestep/height(step_orient))])
 
 [pf_mean_error,pf_mean_std_error] = CompareToGPS(specific_pf,gps_data);
+%%
 
 for ii = 1 :10: length(specific_pf) 
     gps_point = gps_data(specific_pf(ii).Time,:); 
