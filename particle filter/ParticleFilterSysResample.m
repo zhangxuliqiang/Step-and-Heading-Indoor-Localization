@@ -12,8 +12,6 @@ weight = 1/nr_particles * ones(nr_particles,1);
 
 particle_list = table(x_pos, y_pos, yaw, weight);
 
-
-
 % GPS half normal distribution
 
 dist_prob = makedist('HalfNormal','mu',0,'sigma',2);
@@ -67,7 +65,9 @@ end
 final_timestep = timestep;
 end
 
-function particle_list = Resample(particle_list) % Multinomial sampling  with sort 
+function particle_list = Resample(particle_list) 
+% Systematic sampling sampling  with sort 
+% Source: Gustafsson - 2010 - Particle Filter Theory and Practice with Positioning
 
 N = height(particle_list);
 
