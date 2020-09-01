@@ -1,4 +1,8 @@
-function [positions,step_orient] = plotTrajectory(orient_estimate,shs)
+function [positions,step_orient] = plotTrajectory(orient_estimate,shs, door_handle_use)
+
+if nargin<3
+  door_handle_use = [];
+end
 
 euler_angles = timetable(orient_estimate.Time);
 
@@ -33,17 +37,36 @@ for i = 1: height(shs.steps.data)
    positions = [positions, pos];
 end
 
+positions = struct2table(positions);
+positions.time = seconds(positions.time);
+positions = table2timetable(positions);
+
+door_detections =[];
+
+if ~isempty(door_handle_use)
+    for i = 1: height(door_handle_use)
+      closest_point = retime(positions,door_handle_use(i,:).elapsed,'nearest');
+      door_detections = [door_detections; closest_point];
+    end
+end
+
 % plot the trajectory
 figure()
-x = [positions.x];
-y = [positions.y];
-z = [positions.time];
+x = [positions.x]';
+y = [positions.y]';
+z = [seconds(positions.time)]';
 col = z;  % This is the color, vary with x in this case.
+hold on
 surface([x;x],[y;y],[z;z],[col;col],...
         'facecol','no',...
         'edgecol','interp',...
         'linew',2);
 hcb = colorbar;
+
+if ~isempty(door_handle_use)
+    scatter3(door_detections.x, door_detections.y, seconds(door_detections.time))
+end
+
 title(hcb,'Time (sec)')
 xlabel('X position from initial (meters)')
 ylabel('Y position from initial (meters)')
