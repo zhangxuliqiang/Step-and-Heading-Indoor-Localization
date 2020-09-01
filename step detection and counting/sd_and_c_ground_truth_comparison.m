@@ -16,11 +16,11 @@ file.name = gt_sd_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["acc_X","acc_Y","acc_Z","algo_step_detect","truth_step_detect"]);
+    ["X","Y","Z","algo_step_detect","truth_step_detect"]);
 
 sd.name = file.name;
 
-[sd.matlab_algo_steps, sd.Acceleration, sd.sd_components] = stepDetection(target, false);
+[sd.matlab_algo_steps, sd.Acceleration, sd.sd_components] = stepDetection(target, 'file', false);
 
 sd.sd_comparison = createTimeSeriesCompare(sd.Acceleration, sd.matlab_algo_steps.data);
 
@@ -28,15 +28,15 @@ sd.sd_comparison = createTimeSeriesCompare(sd.Acceleration, sd.matlab_algo_steps
 sd.android_algo_steps = findSteps(sd.sd_comparison.sd_android_algo_points, sd.Acceleration);
 sd.ground_truth_steps = findSteps(sd.sd_comparison.sd_ground_truth_points, sd.Acceleration);
 
-% parfor result_index = 1 : 25
-%     debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
-%     delta_t = result_index * 0.02; 
-%     matlab_pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
-%     android_pseudo_confusion(result_index) = TpFpFnCalc(sd.android_algo_steps.data, sd.ground_truth_steps.data,delta_t);
-% end
-% 
-% sd.matlab_pseudo_confusion = matlab_pseudo_confusion;
-% sd.android_pseudo_confusion = android_pseudo_confusion;
+for result_index = 1 : 25
+    debugDisp([ gt_sd_dataset.name "- delta_t: " result_index], true)
+    delta_t = result_index * 0.02; 
+    matlab_pseudo_confusion(result_index) = TpFpFnCalc(sd.matlab_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+    android_pseudo_confusion(result_index) = TpFpFnCalc(sd.android_algo_steps.data, sd.ground_truth_steps.data,delta_t);
+end
+
+sd.matlab_pseudo_confusion = matlab_pseudo_confusion;
+sd.android_pseudo_confusion = android_pseudo_confusion;
 
 gt2algo_comparisons = [gt2algo_comparisons; sd];
 
@@ -49,7 +49,7 @@ n = 0;
 figure(1)
 for comparison = gt2algo_comparisons'
    n = n + 1;
-   % formatting name for nice plotting by replacing 
+   % formatting name for nice plotting by replacing _ with space
    name_format = strrep(comparison.name,'_',' ');
    
    %cut the string at the char 5 so that date info is not seen in plot

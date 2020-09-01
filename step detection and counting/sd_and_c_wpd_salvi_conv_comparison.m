@@ -18,7 +18,7 @@ disp('done importing')
 % title('3-axis raw accelerometer data for 8 steps')
 
 %% create timetable for processed data
-step_detection = timetable(Acceleration.timestamp);
+step_detection = timetable(Acceleration.Time);
 
 %% optimal settings according to salvi et al
 
@@ -104,7 +104,7 @@ figure()
 stackedplot(step_detection)
 
 figure()
-plot(round(conv_tester,5) == round(step_detection.acc1_gauss,5))
+plot(round(conv_filt_tester,5) == round(step_detection.acc1_gauss,5))
 
 
 %% scoring
@@ -179,7 +179,7 @@ mean_detect = NaN(height(step_detection),1);
 std_detect = NaN(height(step_detection),1);
 
 for data_index = 1:1:height(step_detection)
-%     disp(['detecting peaks: ' int2str(data_index)])
+    disp(['detecting peaks: ' int2str(data_index)])
     
     dp_detect = step_detection(data_index,:);
     
@@ -223,8 +223,8 @@ end
 %% quick builtin option
 step_detection.acc3_quick_detect = NaN(height(step_detection),1);
 
-cum_moving_mean = movmean(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
-cum_moving_std = movstd(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0]);
+cum_moving_mean = movmean(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0],'omitnan');
+cum_moving_std = movstd(step_detection.acc2_conv_score, [length(step_detection.acc2_conv_score)-1 0], 'omitnan');
 
 cum_detect_score_row_index = (step_detection.acc2_conv_score - cum_moving_mean) > ...
                     cum_moving_std .* detect_threshold;
@@ -232,13 +232,14 @@ cum_detect_score_row_index = (step_detection.acc2_conv_score - cum_moving_mean) 
 threshold_rows = step_detection(cum_detect_score_row_index,:);
 step_detection(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
 
+figure
 stackedplot([step_detection.acc3_detect, step_detection.acc3_quick_detect])
 
 %%
 figure()
-% plot(round(step_detection.acc3_detect,2)== round(step_detection.acc3_quick_detect,2));
-difference = difference(~isnan(step_detection.acc3_detect -step_detection.acc3_quick_detect));
- plot(difference);
+plot(round(step_detection.acc3_detect,2)== round(step_detection.acc3_quick_detect,2));
+% difference = diff(~isnan(step_detection.acc3_detect -step_detection.acc3_quick_detect));
+%  plot(difference);
 
 %% finding local minimum through sliding window
 
@@ -282,15 +283,18 @@ threshold_row_index = step_detection.acc0_magnitude_std > 0.6;
 local_max_rows = step_detection(builtinmax,:);
 step_detection(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_detect;
 %%
+close all
 
-figure(1)
+figure()
 hold on
 scatter(step_detection.Time,step_detection.acc4_max)
 scatter(step_detection.Time,step_detection.acc4_builtin_max)
 hold off
 legend('original', 'builtin')
 
-figure(3)
+%%
+
+figure()
 plot(step_detection.acc4_builtin_max == step_detection.acc4_max)
 % for i = 1:length(slidding_window)
 %     line([slidding_window(i) slidding_window(i)],get(hax,'YLim'),'Color',[1 0 0])

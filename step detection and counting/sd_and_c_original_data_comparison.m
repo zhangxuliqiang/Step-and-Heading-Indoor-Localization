@@ -1,6 +1,6 @@
-clc
-close all
-clear variables
+% clc
+% close all
+% clear variables
 
 sd_og_data_comparisons = [];
 
@@ -15,9 +15,9 @@ file.name = gt_sd_dataset.name;
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["acc_X","acc_Y","acc_Z"]);
+    ["X","Y","Z"]);
 sd.name = file.name;
-[sd.steps, sd.Acceleration, sd.sd_components] = stepDetection(target, false);
+[sd.steps, sd.Acceleration, sd.sd_components] = stepDetection(target,'file', false);
 
 sd_og_data_comparisons = [sd_og_data_comparisons; sd];
 
@@ -88,9 +88,9 @@ file.name = 'backpocket1_60_steps_HIMU-2020-04-20_10-02-03.csv';
 
 target.file = file;
 target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["acc_X","acc_Y","acc_Z"]);
+    ["X","Y","Z"]);
 
-[target.steps, target.Acceleration, target.sd_components] = stepDetection(target, false);
+[target.steps, target.Acceleration, target.sd_components] = stepDetection(target,'file', false);
 
 figure()
 stackedplot(target.sd_components)
