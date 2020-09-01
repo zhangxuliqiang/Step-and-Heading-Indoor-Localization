@@ -1,4 +1,5 @@
 
+clear all
 
 global data
 global i
