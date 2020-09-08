@@ -12,9 +12,10 @@ prev_y_pos = start_point(2) * ones(nr_particles,1);
 yaw = random('Uniform', 0, 2*pi, nr_particles, 1);
 weight = 1/nr_particles * ones(nr_particles,1);
 pre_resample_weight = zeros(nr_particles,1);
+door_detect = zeros(nr_particles,1);
 
 particle_list = table(x_pos, y_pos, prev_x_pos, prev_y_pos, ...
-                      yaw, weight, pre_resample_weight);
+                      yaw, weight, pre_resample_weight, door_detect);
 
 prev_time = seconds(0);
 
@@ -57,6 +58,7 @@ for timestep = 1: height(step_orient)
             distance_weighting(i,1) = max(particle_door_pdf);
         end
         particle_list = MeasUpdate(particle_list, distance_weighting);
+        output(timestep,:).door_detect = 1;
     end
      
     particle_list = Resample(particle_list);

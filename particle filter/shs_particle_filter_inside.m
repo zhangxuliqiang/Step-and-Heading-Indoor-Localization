@@ -32,13 +32,14 @@ doors = grid2local(walls, cell2mat(door_pixel_location));
 fig = figure()
 hold on
 show(walls)
-measure_points = ginput(2);
-hold on 
-plot(measure_points(1,1),measure_points(1,2),'x')
-plot(measure_points(2,1),measure_points(2,2),'x')
-
-
-norm(measure_points(1,:)-measure_points(2,:))
+plot(doors(:,1),doors(:,2),'x')
+% measure_points = ginput(2);
+% hold on 
+% plot(measure_points(1,1),measure_points(1,2),'x')
+% plot(measure_points(2,1),measure_points(2,2),'x')
+% 
+% 
+% norm(measure_points(1,:)-measure_points(2,:))
 
 %%
 
@@ -85,11 +86,30 @@ target.est = [estimate1.est{:,:}]';
 clc
 
 [specific_pf, final_timestep] = ParticleFilter_inside(start_point,nr_particles, ...
-                                                step_orient, 0.4, 0.1, walls, doors, door_handle_use);
+                                                step_orient, 0.3, 0.15, walls, doors, door_handle_use);
 disp(['pf completed:' num2str(final_timestep/height(step_orient))])
 
 %%
 
+gt_walkingroute =[];
+
+for ii = 1 :1: length(specific_pf) 
+    
+    figure(1)
+    show(walls)
+    hold on
+    if specific_pf(ii).door_detect == 1
+    scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.r')
+    set_point = ginput(1);    
+    gt_walkingroute = [gt_walkingroute; seconds(specific_pf(ii).Time), set_point ];
+    else
+        scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.b')
+    end
+    title(['timestep: ' num2str(ii)])
+    hold off
+    
+
+end
 for ii = 1 :1: length(specific_pf) 
     
     figure(1)
