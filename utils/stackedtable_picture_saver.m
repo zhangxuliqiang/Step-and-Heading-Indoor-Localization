@@ -18,10 +18,10 @@ for i  = 1:1:n
     end
     
     identifier = strrep(identifier," ", "_");
-    pic_name = strcat('/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/pictures/',time,'_', identifier);
+    pic_name = strcat('/home/', getenv('USER') ,'/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/pictures/',time,'_', identifier);
     
     
-    saveas(fig,pic_name,'eps');
+    saveas(fig,pic_name,'epsc');
     saveas(fig,pic_name,'png');
 end 
 end
