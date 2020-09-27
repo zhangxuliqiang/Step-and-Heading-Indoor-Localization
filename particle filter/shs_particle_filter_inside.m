@@ -95,21 +95,28 @@ gt_walkingroute =[];
 
 for ii = 1 :1: length(specific_pf) 
     
+%% ground truth generation
+% 
+% gt_walkingroute =[];
+
+for ii = 1 :1: height(specific_pf) 
+    particle_list = specific_pf(ii,:).particle_lists{1,1};
     figure(1)
     show(walls)
     hold on
-    if specific_pf(ii).door_detect == 1
-    scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.r')
-    set_point = ginput(1);    
-    gt_walkingroute = [gt_walkingroute; seconds(specific_pf(ii).Time), set_point ];
+    if specific_pf(ii,:).door_detect == 1
+    scatter(particle_list(:,utils.index.x_pos), particle_list(:,utils.index.y_pos), '.r')
+%     set_point = ginput(1);    
+%     gt_walkingroute = [gt_walkingroute; seconds(specific_pf(ii).Time), set_point ];
     else
-        scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.b')
+        scatter(particle_list(:,utils.index.x_pos), particle_list(:,utils.index.y_pos), '.b')
     end
     title(['timestep: ' num2str(ii)])
     hold off
     
 
 end
+
 %%
 clc
 gt_walkingroute = timetable(gt_walkingroute(:,2), ...
@@ -166,17 +173,75 @@ for std_orient = 0.05:0.05:0.3
     orient_pf(std_orient_counter).sl_pf = sl_pf;
 end
 %%
+
+plot_index = 1;
+sub_plot_length = length(orient_pf) + 1;
+std_sl_x_axis  = 0.1:0.1:0.5; 
+
+ t = tiledlayout(length(orient_pf),1);
+ 
+for i = 1:length(orient_pf)
+    
+    specific_sl_pf = orient_pf(i).sl_pf;
+    
+    bc_mean_error = [];
+    bc_mean_std = [];
+    
+    for std_sl_index = 1:length(specific_sl_pf)
+        track_completed_index = [specific_sl_pf(std_sl_index).realizations.percent_complete] == 1;
+        bc_mean_error = [bc_mean_error; [specific_sl_pf(std_sl_index).realizations.mean_error].*track_completed_index];
+        bc_mean_std = [bc_mean_std; [specific_sl_pf(std_sl_index).realizations.mean_std_error].*track_completed_index];
+    end
+    
+    ax(i) = nexttile;
+    b = bar(ax(i),std_sl_x_axis,bc_mean_error);
+    title(['orientation std: '  num2str(orient_pf(i).std_orient)])
+    set(ax(i),'fontsize',10)
+    ylim([0,100])
+    
+    xtips2 = b(i).XEndPoints-0.005;
+    ytips2 = 70.*ones(size(b(2).XEndPoints));
+    labels2 = string([specific_sl_pf.completed]);
+    text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom','color','b', 'fontsize',6)
+    
+end
+title(t,'mean error from corresponding gps point')
+xlabel(t,'step length std (m)')
+ylabel(t,'Error (m)')
+xticklabels(ax(1:end-1),{})
+t.TileSpacing = 'compact';
+
+
+%% video maker
+
+ writerObj = VideoWriter('myVideo1.avi');
+ writerObj.FrameRate = 10;
+
+ % open the video writer
+ open(writerObj);
+
 for ii = 1 :1: length(specific_pf) 
     
     figure(1)
     show(walls)
     hold on
-    scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.')
+    if specific_pf(ii).door_detect == 1
+    scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.r')
+    else
+        scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.b')
+    end
     title(['itteration: ' num2str(ii)])
     hold off
+    
+    frame = getframe(figure(1));
+    writeVideo(writerObj, frame);
 end
 
-%%
+ % close the writer object
+ close(writerObj);
+
+%% step by step movement
 close all
 h_fig = figure(1);
 set(h_fig,'KeyPressFcn',{@myfun,specific_pf,walls});
