@@ -4,7 +4,8 @@
 
 sd_og_data_comparisons = [];
 
-path.path = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/step counting/20 april/';
+path.path = ['/home/' getenv('USER') ...
+    '/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/step counting/20 april/'];
 path.time_unit = 1E-3;
 
 gt_sd_datasets = dir(strcat(path.path,'/*.csv'));
