@@ -110,6 +110,62 @@ for ii = 1 :1: length(specific_pf)
     
 
 end
+%%
+clc
+gt_walkingroute = timetable(gt_walkingroute(:,2), ...
+    gt_walkingroute(:,3), 'RowTimes', seconds(gt_walkingroute(:,1)), ...
+    'VariableNames',{'x_pos','y_pos'});
+
+%% Individual testing
+
+ [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+        step_orient, 0.3, 0.15, walls, doors, door_handle_use);
+ disp(['pf completed:' num2str(utils.final_timestep/height(step_orient))])
+    %%
+    clc
+pf_stat = CompareToGroundTruth(specific_pf, utils, gt_walkingroute)
+
+%%
+clc
+nr_particles = 100;
+std_orient_counter = 0;
+
+orient_pf = [];
+
+for std_orient = 0.05:0.05:0.3
+    std_orient_counter = std_orient_counter +1;
+    
+    fprintf('std_orient = %f \n', std_orient )
+    
+    sl_pf = [];
+    sl_std_counter = 0;
+    
+    for std_sl = 0.1:0.05:0.3
+        sl_std_counter = sl_std_counter +1;
+        fprintf('       std_sl = %f \n', std_sl )
+        realizations =[];
+        
+        for itteration = 1:10
+            fprintf('       itteration: %i' ,itteration )
+            
+% [output, utils] = ParticleFilter_inside_mat(start_point, nr_particles, step_orient, std_sl, std_orient, walls, doors, door_handle_use)           
+            [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+                step_orient, std_sl, std_orient, walls, doors, door_handle_use);
+            disp(['       pf completed:' num2str(utils.final_timestep/height(step_orient))])
+            
+            realizations(itteration).percent_complete = utils.final_timestep/height(step_orient);
+            
+            [realizations(itteration).mean_error, realizations(itteration).mean_std_error] =  ...
+                CompareToGroundTruth(specific_pf, utils, gt_walkingroute);
+        end
+        sl_pf(sl_std_counter).std_sl = std_sl;
+        sl_pf(sl_std_counter).realizations = realizations;
+        sl_pf(sl_std_counter).completed = sum([realizations.percent_complete] == 1);
+    end
+    orient_pf(std_orient_counter).std_orient = std_orient;
+    orient_pf(std_orient_counter).sl_pf = sl_pf;
+end
+%%
 for ii = 1 :1: length(specific_pf) 
     
     figure(1)
