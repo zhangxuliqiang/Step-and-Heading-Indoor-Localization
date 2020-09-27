@@ -60,15 +60,17 @@ sd_components.acc0_magnitude = sqrt(data.X.^2 + data.Y.^2 + ...
 
 %% Threshold on standard deviation of acceleration magnitude
 debugDisp('     apply threshold on standard deviation',debug_flag)
-sd_components.acc0_magnitude_thres = NaN(height(sd_components),1);
 sd_components.acc0_magnitude_std = NaN(height(sd_components),1);
+sd_components.acc0_magnitude_thres = NaN(height(sd_components),1);
 
-sd_components.acc0_magnitude_std = movstd(sd_components.acc0_magnitude,70);
+sd_components.acc0_magnitude_std = movstd(sd_components.acc0_magnitude,[seconds(0.8),seconds(0)], ...
+                                   'SamplePoints',sd_components.Time);
 
-threshold_row_index = sd_components.acc0_magnitude_std > 1;
+threshold_row_index = sd_components.acc0_magnitude_std > 0.6;
 threshold_rows = sd_components(threshold_row_index,:);
 
-sd_components.acc0_magnitude_thres = sd_components.acc0_magnitude .* threshold_row_index;
+sd_components(threshold_rows.Time,:).acc0_magnitude_thres = ...
+    sd_components(threshold_rows.Time,:).acc0_magnitude;
 
 %% Filter Convolution process
 debugDisp('     Apply gaussian filter',debug_flag)
