@@ -71,30 +71,31 @@ hold off
 
 nr_particles = 200;
 
-door_handle_use = ReferenceFile2Timetable('/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/lopen1/references.txt');
+door_handle_use = ReferenceFile2Timetable('../datasets/lopen1/references.txt');
 
-
-%%
-clc
 
 target = timetable(estimate1.Time);
 target.est = [estimate1.est{:,:}]';
 
 [og_positions, step_orient] = plotTrajectory(target,shs, door_handle_use);
 
-%%
+%% finding completed track
 clc
 
-[specific_pf, final_timestep] = ParticleFilter_inside(start_point,nr_particles, ...
-                                                step_orient, 0.3, 0.15, walls, doors, door_handle_use);
-disp(['pf completed:' num2str(final_timestep/height(step_orient))])
-
-%%
-
-gt_walkingroute =[];
-
-for ii = 1 :1: length(specific_pf) 
+while true
+    tic
+    [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+        step_orient, 0.3, 0.15, walls, doors, door_handle_use);
+    disp(['pf completed:' num2str(utils.final_timestep/height(step_orient))])
+    toc
     
+    if utils.final_timestep/height(step_orient) > 0.8
+        break
+    end
+
+end
+
+
 %% ground truth generation
 % 
 % gt_walkingroute =[];
