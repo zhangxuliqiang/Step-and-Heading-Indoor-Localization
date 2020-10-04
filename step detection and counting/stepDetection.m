@@ -62,6 +62,12 @@ pp_window_t = 0.200; %s
 %% preprocessing: generate the norm of the acceleration signal
 % TODO: interpolation to get constant sampling time
 debugDisp('     calculate norm',debug_flag)
+if sum(contains(data.Properties.VariableNames,'acc0_magnitude'))<1
+    sd_components.acc0_magnitude = sqrt(data.X.^2 + data.Y.^2 + ...
+        data.Z.^2);
+else
+    sd_components.acc0_magnitude = data.acc0_magnitude;
+end
 
 %% Threshold on standard deviation of acceleration magnitude
 debugDisp('     apply threshold on standard deviation',debug_flag)
