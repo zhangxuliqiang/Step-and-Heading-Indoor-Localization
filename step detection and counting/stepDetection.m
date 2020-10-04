@@ -1,6 +1,13 @@
 function [steps, data, sd_components] = stepDetection(target, data_type, debug_flag)
+% STEPDETECTION Calculates steps from three axis accelerometer data
+%   INPUT: Either file path (data_type = 'file' ) or raw data timetable (data_type = 'data')
+%   OUTPUT: steps - contains number of steps and the raw data associated
+%           with it.
+%           data - returns raw data in timetable form from import, only
+%           really useful when data_type = 'file'.
+%           sd_components - returns a timetable with every stage of step
+%           detection
 
-disp('performing step detection')
 
 % if not user specified all steps will de displayed in command terminal
 if nargin < 2
@@ -8,7 +15,7 @@ if nargin < 2
 end
 
 if strcmp(data_type, 'file')
-% determine which import to use depending on file extension
+    % determine which import to use depending on file extension
     [~, ~, fExt] = fileparts(target.file.name);
     switch lower(fExt)
         case '.csv'
@@ -16,9 +23,9 @@ if strcmp(data_type, 'file')
         case '.json'
             data = JSONFile2Timetable(target);
         case '.txt'
-           data = SSVFile2Timetable(target);
-           timestamp = seconds(0.0810:1/100:291.3200);
-           data = retime(data,timestamp,'linear');
+            data = SSVFile2Timetable(target);
+            timestamp = seconds(0.0810:1/100:291.3200);
+            data = retime(data,timestamp,'linear');
         otherwise
             error('Unexpected file extension: %s', fExt);
     end
@@ -55,16 +62,15 @@ pp_window_t = 0.200; %s
 %% preprocessing: generate the norm of the acceleration signal
 % TODO: interpolation to get constant sampling time
 debugDisp('     calculate norm',debug_flag)
-sd_components.acc0_magnitude = sqrt(data.X.^2 + data.Y.^2 + ...
-    data.Z.^2);
 
 %% Threshold on standard deviation of acceleration magnitude
 debugDisp('     apply threshold on standard deviation',debug_flag)
 sd_components.acc0_magnitude_std = NaN(height(sd_components),1);
 sd_components.acc0_magnitude_thres = NaN(height(sd_components),1);
 
-sd_components.acc0_magnitude_std = movstd(sd_components.acc0_magnitude,[seconds(0.8),seconds(0)], ...
-                                   'SamplePoints',sd_components.Time);
+sd_components.acc0_magnitude_std = ...
+    movstd(sd_components.acc0_magnitude,[seconds(0.8),seconds(0)], ...
+    'SamplePoints',sd_components.Time);
 
 threshold_row_index = sd_components.acc0_magnitude_std > 0.6;
 threshold_rows = sd_components(threshold_row_index,:);
@@ -80,10 +86,13 @@ sd_components.acc1_conv_gauss = NaN(height(sd_components),1);
 gauss_window = gaussianWindow(filt_window_size, filt_std);
 gauss_sum = sum(gauss_window);
 kernel = transpose(gauss_window./gauss_sum);
-conv_gauss_filter = conv(sd_components.acc0_magnitude_thres, kernel, 'valid');
+conv_gauss_filter = conv(sd_components.acc0_magnitude_thres, kernel, ...
+    'valid');
 
 half_window = floor(filt_window_size/2);
-sd_components(half_window+1:end-half_window,:).acc1_conv_gauss = conv_gauss_filter;
+
+sd_components(half_window+1:end-half_window,:).acc1_conv_gauss = ...
+    conv_gauss_filter;
 
 %% Score convolution process
 debugDisp('     Apply scoring',debug_flag)
@@ -100,24 +109,31 @@ debugDisp('     Detect peaks',debug_flag)
 % Detecting outliers with builtin matlab methods
 sd_components.acc3_quick_detect = NaN(height(sd_components),1);
 
-cum_moving_mean = movmean(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
-cum_moving_std = movstd(sd_components.acc2_conv_score, [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
+cum_moving_mean = movmean(sd_components.acc2_conv_score, ...
+    [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
 
-cum_detect_score_row_index = (sd_components.acc2_conv_score - cum_moving_mean) > ...
-                    cum_moving_std .* detect_threshold;
-                
+cum_moving_std = movstd(sd_components.acc2_conv_score, ...
+    [length(sd_components.acc2_conv_score)-1 0], 'omitnan');
+
+cum_detect_score_row_index = ...
+    (sd_components.acc2_conv_score - cum_moving_mean) > ...
+    cum_moving_std .* detect_threshold;
+
 threshold_rows = sd_components(cum_detect_score_row_index,:);
-sd_components(threshold_rows.Time,:).acc3_quick_detect = threshold_rows.acc1_conv_gauss;
+
+sd_components(threshold_rows.Time,:).acc3_quick_detect = ...
+    threshold_rows.acc1_conv_gauss;
 
 %% find local maxima through sliding window
 debugDisp('     Find local maxima',debug_flag)
 sd_components.acc4_builtin_max = NaN(height(sd_components),1);
 
-builtinmax = islocalmax(sd_components.acc3_quick_detect,'MinSeparation',seconds(pp_window_t), ...
-                        'SamplePoints',sd_components.Time);
+builtinmax = islocalmax(sd_components.acc3_quick_detect, ...
+    'MinSeparation',seconds(pp_window_t),'SamplePoints',sd_components.Time);
 
 local_max_rows = sd_components(builtinmax,:);
-sd_components(local_max_rows.Time,:).acc4_builtin_max = local_max_rows.acc3_quick_detect;
+sd_components(local_max_rows.Time,:).acc4_builtin_max = ...
+    local_max_rows.acc3_quick_detect;
 
 %% Determine rows where a step was detected
 sd_index = find(not(isnan(sd_components.acc4_builtin_max)));
