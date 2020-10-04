@@ -1,15 +1,24 @@
+% SCRIPT USE
+% the following script use the datasets made available by salvi et al to
+% compare groud truth steps, salvi et al algorithm and the variation made
+% in matlab
+
+% VARIABLE LEGEND 
+% sd = step detection
+% gt = ground truth
+
 clc
 close all
 clear variables
 
-% -------- LEGEND --------
-% sd = step detection
-% gt = ground truth
-
-%
+% initialize comparison struct that will be populated later
 gt2algo_comparisons = [];
 
-path.path  = '../../../Code and Datasets/Online Code/oxford step counter/validation/';
+% define path in which the datasets can be found 
+path.path  = ['/home/' getenv('USER') ...
+    '/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/Online Code/oxford step counter/validation/'];
+
+% Salvi et al. dataset timestamp is in nano seconds
 path.time_unit = 1E-9;
 
 % find all files in the directory that have csv extension
@@ -34,6 +43,8 @@ for gt_sd_dataset = gt_sd_datasets'
     % create comparison struct between gt, salvi algo, and matlab algo
     sd_comparison.name = file.name;
     
+    sd_comparison.raw_data = sd.raw_data;
+    
     % add step detection flags to data timetable for later analysis
     sd_comparison.ts_comparison = ...
         createTimeSeriesCompare(sd.raw_data, sd.matlab_algo_steps.data);
@@ -51,23 +62,26 @@ for gt_sd_dataset = gt_sd_datasets'
     
     sd_comparison.matlab_algo_steps = sd.matlab_algo_steps;
     
+    % determine true positives, false positives and false negatives within
+    % a time range, which is itterated over to find the range in which the
+    % the best result can be found
     
-    for result_index = 1 : 25
-        result_index
-        debugDisp([ gt_sd_dataset.name "- delta_t: " num2str(result_index)], true)
-        delta_t = result_index * 0.02;
-        
-        matlab_pseudo_confusion(result_index) = ... 
-            TpFpFnCalc(sd_comparison.matlab_algo_steps.data, ...
-                       sd_comparison.ground_truth_steps.data,delta_t);
-                   
-        android_pseudo_confusion(result_index) = ...
-            TpFpFnCalc(sd_comparison.salvi_algo_steps.data, ...
-                       sd_comparison.ground_truth_steps.data,delta_t);
-    end
-    
-    sd_comparison.matlab_pseudo_confusion = matlab_pseudo_confusion;
-    sd_comparison.android_pseudo_confusion = android_pseudo_confusion;
+%     for result_index = 1 : 25
+%         result_index
+%         debugDisp([ gt_sd_dataset.name "- delta_t: " num2str(result_index)], true)
+%         delta_t = result_index * 0.02;
+%         
+%         matlab_pseudo_confusion(result_index) = ... 
+%             TpFpFnCalc(sd_comparison.matlab_algo_steps.data, ...
+%                        sd_comparison.ground_truth_steps.data,delta_t);
+%                    
+%         android_pseudo_confusion(result_index) = ...
+%             TpFpFnCalc(sd_comparison.salvi_algo_steps.data, ...
+%                        sd_comparison.ground_truth_steps.data,delta_t);
+%     end
+%     
+%     sd_comparison.matlab_pseudo_confusion = matlab_pseudo_confusion;
+%     sd_comparison.android_pseudo_confusion = android_pseudo_confusion;
     
     gt2algo_comparisons = [gt2algo_comparisons; sd_comparison];
     
