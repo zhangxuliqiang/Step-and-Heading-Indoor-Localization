@@ -1,30 +1,17 @@
-% clc
-% close all
-% clear variables
+%% sd_and_c_og_data_comp_plotter_scripts
 
-sd_og_data_comparisons = [];
+% SCRIPT USE
+% The following script is used to plot different performance measures of the 
+% stepDetection function. They are sectioned so that they can be run
+% seperately with ctrl=shift
 
-path.path = ['/home/' getenv('USER') ...
-    '/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/step counting/20 april/'];
-path.time_unit = 1E-3;
-
-gt_sd_datasets = dir(strcat(path.path,'/*.csv'));
-for gt_sd_dataset = gt_sd_datasets'
-
-file.directory = [gt_sd_dataset.folder '/'] ;
-file.name = gt_sd_dataset.name;
-
-target.file = file;
-target.dataSetProp = DataSetProp("Accelerometer","Time",(path.time_unit), ...
-    ["X","Y","Z"]);
-sd.name = file.name;
-[sd.steps, sd.Acceleration, sd.sd_components] = stepDetection(target,'file', false);
-
-sd_og_data_comparisons = [sd_og_data_comparisons; sd];
-
-end
+% NOTE
+% the script is not standalone and requires the workspace to contain
+% the output of sd_and_c_salvi_comp.m
 
 %% Percentual accuracy
+% the data generate had the user walk exactly 60 steps. Knowing this, the
+% percentage error can be calculated for the different carrying modes.
 
 bar_comp_data = [];
 bar_names = {};
@@ -32,11 +19,11 @@ n = 0;
 figure()
 for comparison = sd_og_data_comparisons'
       n = n + 1;
-   % formatting name for nice plotting by replacing 
+   % formatting name for nice plotting by replacing underscore with space
    name_format = strrep(comparison.name,'_',' ');
    
-   %cut the string at the char 5 so that date info is not seen in plot
-   name = strsplit(name_format,'H');
+   %cut the string at the char 6 so that string afterwards is not seen in plot
+   name = strsplit(name_format,'6');
    
    %only use the name
    bar_names(n) = {name{1}(1:end-1)}; 
@@ -44,7 +31,7 @@ for comparison = sd_og_data_comparisons'
 end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
-title("step counting error of original dataset") 
+title("step counting error of 60 steps") 
 ylabel('error (%)') 
 
 %% Absolute number of sd.steps detected
@@ -68,7 +55,6 @@ end
 bar_names = categorical(bar_names);
 bar(bar_names,bar_comp_data)
 title('step counting comparison with original data') 
-legend('matlab algorithm')
 
 %% All step detection component plots
 
