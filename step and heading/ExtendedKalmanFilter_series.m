@@ -9,7 +9,7 @@ mag.Type(:) = Types(3);
 combined_raw = [acc; mag; gyr];
 combined_raw = sortrows(combined_raw);
 
-P = 0.01 * eye(4);
+P = 0.1 * eye(4);
 
 calAcc_R = variance.acc * eye(3);
 
@@ -28,7 +28,8 @@ estimate = repmat(struct('Time', nan, ...
                          'est',nan, ...
                          'P', nan,...
                          'error', nan,...
-                         'type', nan),...
+                         'type', nan,...
+                         'corrected', nan),...
                          height(combined_raw), 1 );
 
 
@@ -47,7 +48,8 @@ for index = 1:1:height(combined_raw)
     end
     
     y = combined(:,index) ;
-    
+    error = nan;
+    corrected = 0;
     switch type(index)
         
         case Types(1)
@@ -56,10 +58,11 @@ for index = 1:1:height(combined_raw)
             % -------------  MOTION UPDATE -----------------------
             F = eye(4) + 0.5*(dT(counter)* Somega(y));
             Gu= dT(counter)./ 2 *Sq(est);
-            est = F* est;            
+            est = F* est; 
+            J = (1/norm(est)^3)*(eye(4)*(est'*est) - (est*est'));
             est = est / norm(est);
             P = F*P*F' + Gu*calGyr_R*Gu';
-            error = nan;
+%             P = J*P*J';
     % -------------- MEASUREMENT UPDATES ------------------
        
             
@@ -81,7 +84,10 @@ for index = 1:1:height(combined_raw)
             
             if norm(y) < 10.3 && norm(y) > 9.3
                 [est,P] = measUpdate(est,P,error,H,R);            
-                est = est/norm(est);
+                J = (1/norm(est)^3)*(eye(4)*(est'*est) - (est*est'));
+                est = est/norm(est); 
+                corrected = 1;
+%                 P = J*P*J';
             end
             
          case Types(3)
@@ -102,7 +108,10 @@ for index = 1:1:height(combined_raw)
             
              if norm(y) < 1.1 && norm(y) > 0.9
                  [est,P] = measUpdate(est,P,error,H,R);
+                 J = (1/norm(est)^3)*(eye(4)*(est'*est) - (est*est'));
                  est = est/norm(est);
+                 corrected = 1;
+%                  P = J*P*J';
              end
 
     end
@@ -113,6 +122,7 @@ for index = 1:1:height(combined_raw)
     x.P = P;
     x.error = error;
     x.type = type(index);
+    x.corrected = corrected;
 
     
     estimate(index) = x;
@@ -175,3 +185,4 @@ function S=Sq(q)
        q3  q0 -q1;
       -q2  q1  q0];
 end
+
