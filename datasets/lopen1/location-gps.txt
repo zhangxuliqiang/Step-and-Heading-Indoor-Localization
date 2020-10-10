@@ -1,6 +1,0 @@
-location-gps.txt
-
-This provider determines location using satellites. Depending on conditions, this provider may take a while to return a location fix..
-http://developer.android.com/reference/android/location/LocationManager.html
-
-elapsed-time-system elapsed-time-sensor latitude longitude altitude bearing accuracy speed
