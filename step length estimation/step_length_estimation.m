@@ -50,18 +50,17 @@ for sl_dataset = pocket_data_15m'
     
 end
 spreadfigures
-%% 
-% creating lookup table for color per user_id
-all_names = arrayfun(@(S) S.properties.user_id, sl_comparisons(:));
+% 
+% creating list of user_id
+all_user_id = arrayfun(@(S) S.properties.user_id, sl_comparisons(:));
 all_genders = arrayfun(@(S) convertCharsToStrings(S.properties.gender), ...
     sl_comparisons(:));
-name_gender = [all_names,all_genders];
-unique_names_genders = unique(name_gender,'rows');
-values = rand(length(unique_names_genders),3);
+name_gender = [all_user_id,all_genders];
+unique_user_ids_genders = unique(name_gender,'rows');
 
 freq_comp = [];
 counter = 0;
-for unique_name_gender = unique_names_genders'
+for unique_name_gender = unique_user_ids_genders'
     counter = counter + 1;
     
     freq_comp(counter).name = unique_name_gender(1); 
@@ -85,42 +84,8 @@ for unique_name_gender = unique_names_genders'
         end
     end
 end
-%%
-color_scheme = struct('unique_names',mat2cell(unique_names_genders(:,1),ones(1,length(unique_names_genders))),...
-                        'values',mat2cell(values,ones(1,length(values))));
+%% Determining Step Length Constant using Tian frequency based method
 
-user_ids = [];
-clear t                   
-figure
-i = 1;
-for specific_freq_com = gender_data
-        color_index = find([color_scheme.unique_names] == ...
-            specific_freq_com.name);
-        
-        x = [specific_freq_com.proc_data(:).height_mult_sqrt_freq];
-        z = [specific_freq_com.proc_data(:).path_length_div_nr_steps];
-        color =color_scheme(color_index).values;
-        
-        hold on
-        t(i) = plot(x,z,'-','color',color);
-        scatter(x(1),z(1),'x','MarkerEdgeColor',color)
-        scatter(x(2),z(2),'o','MarkerEdgeColor',color)
-        scatter(x(3),z(3),'^','MarkerEdgeColor',color)
-        hold off
-        i  = i+1;
-    
-end
-legend(t,[gender_data.name])
-
-hold on 
-
-x = 1:0.1:3;
-
-y = 0.3116*x;
-plot(x,y)
-hold off
-    
-%%
 all_plotting_data = arrayfun(@(S) [[S.proc_data.height_mult_sqrt_freq]',...
     [S.proc_data.path_length_div_nr_steps]'], freq_comp(:), ...
     'UniformOutput', false);
@@ -128,23 +93,9 @@ all_plotting_data = arrayfun(@(S) [[S.proc_data.height_mult_sqrt_freq]',...
 all_plotting_data = cell2mat(all_plotting_data);
 corrupt_data = find(isnan(all_plotting_data(:,1))');
 
-all_plotting_data(corrupt_data,:) = [];
+% all_plotting_data([corrupt_data,40:42],:) = [];
 
-% linear least squares
-x = lsqr(all_plotting_data(:,1),all_plotting_data(:,2));
+all_plotting_data(corrupt_data,:) = []; %#ok<*FNDSB> warning supression
 
-%%
-gender = strcmp([freq_comp.gender], "male");
-
-gender_data = freq_comp(gender);
-
-male__plotting_data = arrayfun(@(S) [[S.proc_data.height_mult_sqrt_freq]',...
-    [S.proc_data.path_length_div_nr_steps]'], gender_data(:), ...
-    'UniformOutput', false);
-
-male__plotting_data = cell2mat(male__plotting_data);
-corrupt_data = find(isnan(male__plotting_data(:,1))');
-
-male__plotting_data(corrupt_data,:) = [];
-
-x = lsqr(male__plotting_data(:,1),male__plotting_data(:,2))
+% linear least squares calculation
+tian_constant = lsqr(all_plotting_data(:,1),all_plotting_data(:,2));
