@@ -1,5 +1,9 @@
 function picture_saver(name)
 
+if nargin == 0
+    name = '';
+end
+
 h =  findobj('type','figure');
 n = length(h);
 time = datestr(now,'yyyymmdd_HHMM');
