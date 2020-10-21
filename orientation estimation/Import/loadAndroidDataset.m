@@ -2,15 +2,13 @@
 function aData = loadAndroidDataset(directory)
 
 	aData = AcquisitionData;
-	aData.provider = 'Android';
+	aData.provider = 'android';
 
 	aData.data_directory = directory;
-
 
 	if exist(directory, 'file') ~= 7 
 		error([directory ' does not exists'])
 	end
-
 
 	% Raw data
 	raw_imu = aData.raw_imu;
@@ -20,9 +18,12 @@ function aData = loadAndroidDataset(directory)
     acc_var_names = ["X","Y","Z"];
 	raw_imu.accelerometer = loadIfExists(directory, 'accelerometer.txt', acc_var_names); 
     
+    if(isempty(raw_imu.accelerometer))
+        raw_imu.accelerometer = loadIfExists(directory, 'accelerometer-calibrated.txt', acc_var_names);
+    end
+    
     mag_var_names = ["X","Y","Z"];
 	raw_imu.magnetometer = loadIfExists(directory, 'magnetometer.txt',mag_var_names);
-
 
 	% Device computed data
 	device_computed = aData.device_computed;
@@ -39,7 +40,6 @@ function aData = loadAndroidDataset(directory)
 	% http://developer.android.com/reference/android/hardware/SensorEvent.html#values
 	if ~isempty(device_computed.attitude)
 		device_computed.attitude{:, 1:4} = device_computed.attitude{:, [4 1 2 3]};
-		device_computed.attitude{:, 1:4} = removeQuaternionsJumps(device_computed.attitude{:, 1:4});
     end
 	
 end
@@ -60,7 +60,7 @@ function outputMatrix = loadIfExists(directory, file_name, variable_names)
 		outputMatrix = SSVFile2Timetable(target);
 	else
 		outputMatrix = [];
-%         disp([file_path ' is not available'])
+        disp([file_path ' is not available'])
 	end
 
 end
