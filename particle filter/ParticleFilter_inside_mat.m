@@ -73,9 +73,24 @@ for timestep = 1: height(step_orient)
         particle_list = MeasUpdate(particle_list, index, distance_weighting);
         output(timestep,:).door_detect = 1;
     end
+    
+    % estimate using highest weighting
+    highest_weight = max(particle_list(:,index.weight));
+    highest_index = particle_list(:,index.weight) == highest_weight;
+    high_weight_particles = particle_list(highest_index,:);
+    x_pos_mean = mean(high_weight_particles(:,index.x_pos));
+    y_pos_mean = mean(high_weight_particles(:,index.y_pos));
+    
+    output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
      
     particle_list = Resample(particle_list, index);
     
+    % estimate using mean
+    
+%     x_pos_mean = mean(particle_list(:,index.x_pos));
+%     y_pos_mean = mean(particle_list(:,index.y_pos));
+%     
+%     output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
     % time update
     
     sl_noise = random('Normal', 0.20, std_sl, length(particle_list), 1);
