@@ -59,15 +59,16 @@ for timestep = 1: height(step_orient)
     
     cur_time  = step_orient(timestep,:).Time;
     range_of_times = timerange(prev_time,cur_time);
+    prev_time  = step_orient(timestep,:).Time;    
     
     [~, which_rows] = withinrange(door_handle_use, range_of_times);
     
     if sum(which_rows)>0
         for i = 1:nr_particles
             particle = particle_list(i,:);
-            mean = [particle(index.x_pos), particle(index.y_pos)];
+            cur_pos = [particle(index.x_pos), particle(index.y_pos)];
             covariance = [0.2 0; 0 0.2];
-            particle_door_pdf = mvnpdf(doors,mean,covariance);
+            particle_door_pdf = mvnpdf(doors,cur_pos,covariance);
             distance_weighting(i,1) = max(particle_door_pdf);
         end
         particle_list = MeasUpdate(particle_list, index, distance_weighting);
@@ -91,9 +92,10 @@ for timestep = 1: height(step_orient)
 %     y_pos_mean = mean(particle_list(:,index.y_pos));
 %     
 %     output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
+    
     % time update
     
-    sl_noise = random('Normal', 0.20, std_sl, length(particle_list), 1);
+    sl_noise = random('Normal', 0, std_sl, length(particle_list), 1);
     orientation_noise = random('Normal', 0, std_orient, length(particle_list), 1);
     
     sl_realization = step_orient.step_length(timestep) + sl_noise;
