@@ -23,8 +23,17 @@ particle_list(:,index.weight) = 1/nr_particles * ones(nr_particles,1);
 particle_list(:,index.pre_resample_weight) = zeros(nr_particles,1);
 
 prev_time = seconds(0);
+progress_before= 0;
 
 for timestep = 1: height(step_orient)
+    
+    progress = round(timestep/height(step_orient)*100);
+    if mod(progress,10) == 0  && round(progress) ~= 0
+        if progress~=progress_before
+            disp(['percentage complete: ',  num2str(progress)]);
+            progress_before = progress;
+        end
+    end
     
     % check whether the path is a valid one
     for i = 1:nr_particles
@@ -42,7 +51,7 @@ for timestep = 1: height(step_orient)
         else
             try [endpoints,midpoints] = raycast(walls,cur_pos,prev_pos);
             catch ME
-                disp('      shit is wild')      
+                disp('      raycasting took a shit')      
             end
             valid_path = logical(checkOccupancy(walls,[endpoints;midpoints],"grid"));
             invalid_points(i,1) = any(valid_path);
@@ -109,7 +118,6 @@ for timestep = 1: height(step_orient)
     
     particle_list(:,index.y_pos) = particle_list(:,index.y_pos) + sin(orient_realization).* sl_realization;
     
-    prev_time  = step_orient(timestep,:).Time;
     output(timestep,:).Time = step_orient(timestep,:).Time;
     output(timestep,:).particle_lists = particle_list;
 end
