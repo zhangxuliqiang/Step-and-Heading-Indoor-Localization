@@ -8,8 +8,9 @@ limits = [walls.XLocalLimits',   walls.YLocalLimits'];
 
 % using mat format for speed
 [index.x_pos, index.y_pos, index.prev_x_pos, ...
- index.prev_y_pos, index.yaw, index.weight, index.pre_resample_weight] = ...
-    feval(@(x) x{:}, num2cell(1:7));
+ index.prev_y_pos, index.yaw, index.weight, ....
+ index.pre_resample_weight, index.particle_history ] = ...
+    feval(@(x) x{:}, num2cell(1:8));
 
 utils.index = index;
 
@@ -101,6 +102,13 @@ for timestep = 1: height(step_orient)
 %     y_pos_mean = mean(particle_list(:,index.y_pos));
 %     
 %     output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
+    % resampling
+    particle_list(:,index.particle_history) = 1:nr_particles;
+    effective_nr_sample = 1/sum(particle_list(:,index.weight).^2);
+    
+    if effective_nr_sample < 2*nr_particles/3    
+     particle_list = Resample(particle_list, index);
+    end
     
     % time update
     
@@ -149,6 +157,7 @@ for i=1:length(dead_particles)
 end
 
 particle_list = particle_list(resample_index,:);
+particle_list(:,index.particle_history) = resample_index;
 particle_list(:,index.pre_resample_weight) = particle_list(:,index.weight);
 particle_list(:,index.weight) = ones(N,1)/N;
 end
