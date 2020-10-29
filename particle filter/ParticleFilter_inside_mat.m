@@ -2,7 +2,7 @@ function [output, utils] = ParticleFilter_inside_mat(start_point, ...
     nr_particles, step_orient, std_sl, ...
     std_orient, walls, doors, door_handle_use)
 
-delta_angle = [0; diff(step_orient.yaw)];
+delta_angle = [ diff(step_orient.yaw); 0];
 
 limits = [walls.XLocalLimits',   walls.YLocalLimits'];
 
@@ -15,8 +15,10 @@ limits = [walls.XLocalLimits',   walls.YLocalLimits'];
 utils.index = index;
 
 % particle initilization
-particle_list(:,index.x_pos) = start_point(1) * ones(nr_particles,1);
-particle_list(:,index.y_pos) = start_point(2) * ones(nr_particles,1);
+particle_list(:,index.x_pos) = random('Normal', start_point(1), 0.3, nr_particles, 1);
+particle_list(:,index.y_pos) = random('Normal', start_point(2), 0.3, nr_particles, 1);
+% particle_list(:,index.x_pos) = start_point(1) * ones(nr_particles,1);
+% particle_list(:,index.y_pos) = start_point(2) * ones(nr_particles,1);
 particle_list(:,index.prev_x_pos) = start_point(1) * ones(nr_particles,1);
 particle_list(:,index.prev_y_pos) = start_point(2) * ones(nr_particles,1);
 particle_list(:,index.yaw) = random('Uniform', 0, 2*pi, nr_particles, 1);
@@ -40,12 +42,11 @@ for timestep = 1: height(step_orient)
     for i = 1:nr_particles
         particle = particle_list(i,:);
         cur_pos = [particle(index.x_pos), particle(index.y_pos)];
-        
+         prev_pos = [particle(index.prev_x_pos), particle(index.prev_y_pos)];
+         
         % keep position within range of the map
         cur_pos = min(max(cur_pos,limits(1,:)),limits(2,:));
-        prev_pos = [particle(index.prev_x_pos), particle(index.prev_y_pos)];
-        prev_pos = min(max(prev_pos,limits(1,:)),limits(2,:));
-        
+        prev_pos = min(max(prev_pos,limits(1,:)),limits(2,:));        
         
         if isequal(cur_pos, prev_pos)
             invalid_points(i,1) = logical(checkOccupancy(walls,cur_pos));
@@ -54,7 +55,10 @@ for timestep = 1: height(step_orient)
             catch ME
                 disp('      raycasting took a shit')      
             end
-            valid_path = logical(checkOccupancy(walls,[endpoints;midpoints],"grid"));
+            try valid_path = logical(checkOccupancy(walls,[endpoints;midpoints],"grid"));
+            catch ME
+                disp('      checkOccupancy took a shit')      
+            end
             invalid_points(i,1) = any(valid_path);
         end
     end
@@ -77,7 +81,7 @@ for timestep = 1: height(step_orient)
         for i = 1:nr_particles
             particle = particle_list(i,:);
             cur_pos = [particle(index.x_pos), particle(index.y_pos)];
-            covariance = [0.2 0; 0 0.2];
+            covariance = [0.1 0; 0 0.1];
             particle_door_pdf = mvnpdf(doors,cur_pos,covariance);
             distance_weighting(i,1) = max(particle_door_pdf);
         end
@@ -92,16 +96,13 @@ for timestep = 1: height(step_orient)
     x_pos_mean = mean(high_weight_particles(:,index.x_pos));
     y_pos_mean = mean(high_weight_particles(:,index.y_pos));
     
-    output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
-     
-    particle_list = Resample(particle_list, index);
-    
-    % estimate using mean
+        % estimate using mean
     
 %     x_pos_mean = mean(particle_list(:,index.x_pos));
 %     y_pos_mean = mean(particle_list(:,index.y_pos));
-%     
-%     output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
+    
+    output(timestep,:).estimate  = [x_pos_mean, y_pos_mean];
+    
     % resampling
     particle_list(:,index.particle_history) = 1:nr_particles;
     effective_nr_sample = 1/sum(particle_list(:,index.weight).^2);
@@ -112,22 +113,24 @@ for timestep = 1: height(step_orient)
     
     % time update
     
-    sl_noise = random('Normal', 0, std_sl, length(particle_list), 1);
+    sl_noise = random('Normal', 0.1, std_sl, length(particle_list), 1);
     orientation_noise = random('Normal', 0, std_orient, length(particle_list), 1);
     
     sl_realization = step_orient.step_length(timestep) + sl_noise;
-    orient_realization = particle_list(:,index.yaw) + delta_angle(timestep) + orientation_noise;
     
     particle_list(:, index.prev_x_pos) = particle_list(:,index.x_pos);
     particle_list(:, index.prev_y_pos) = particle_list(:,index.y_pos);
     
-    particle_list(:,index.yaw) = orient_realization;
-    particle_list(:,index.x_pos) = particle_list(:,index.x_pos) + cos(orient_realization).* sl_realization;
+   
+    particle_list(:,index.x_pos) = particle_list(:,index.x_pos) + cos(particle_list(:,index.yaw)).* sl_realization;
+    particle_list(:,index.y_pos) = particle_list(:,index.y_pos) + sin(particle_list(:,index.yaw)).* sl_realization;
     
-    particle_list(:,index.y_pos) = particle_list(:,index.y_pos) + sin(orient_realization).* sl_realization;
+    orient_realization = particle_list(:,index.yaw) + delta_angle(timestep) + orientation_noise;
+    particle_list(:,index.yaw) = orient_realization;
     
     output(timestep,:).Time = step_orient(timestep,:).Time;
     output(timestep,:).particle_lists = particle_list;
+    output(timestep,:).effective_nr_sample = effective_nr_sample;
 end
 output = struct2table(output);
 output = table2timetable(output);
