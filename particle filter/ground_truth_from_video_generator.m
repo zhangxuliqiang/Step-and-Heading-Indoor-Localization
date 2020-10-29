@@ -1,5 +1,5 @@
 close all
-directory = '/home/default/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/marie testing';
+directory = '/home/vaningen/MEGAsync/MSc Sensor Fusion Thesis/Code and Datasets/SHS Code/datasets/marie testing';
 
 video.trial_name = 'lopen1.1';
 video.video_name = '/QVR_2020_10_20_16_39_52.mp4';
@@ -16,6 +16,13 @@ video.trial_name = 'lopen1.3';
 video.video_name = '/QVR_2020_10_20_17_31_45.mp4';
 video.start_time = 53; %in seconds
 video.end_time = 272;
+
+%%
+video.trial_name = 'lopen1.5';
+video.video_name = '/QVR_2020_10_20_17_58_11.mp4';
+video.start_time =30; %in seconds
+video.end_time = 209;
+%%
 
 vidObj = VideoReader([directory video.video_name]);
 
@@ -63,11 +70,11 @@ vidObj.CurrentTime = video.start_time;
  writematrix(mat_position_data,[video.trial_name '_gt_from_video.csv'],'WriteMode','append')
  
  file_name = [video.trial_name '_gt_from_video.csv'];
- type file_name
+
  %%
- figure(1)
+ figure(4)
  hold on
- plot([position_data.x],[position_data.y])
+ plot([position_data.x],[position_data.y],'b')
  %%
  pos_data = struct2table(position_data);
  pos_data.time = seconds(pos_data.time);
