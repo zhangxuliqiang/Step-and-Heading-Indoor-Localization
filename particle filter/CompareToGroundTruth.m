@@ -1,8 +1,8 @@
-function [distance_rmse,mean_traj] = CompareToGroundTruth(shs,specific_pf, utils, position_data)
+function [distance_rmse,mean_traj] = CompareToGroundTruth(shs,specific_pf, utils, pos_data)
 
 all_bt_trajectories_x = [];
 all_bt_trajectories_y = [];
-for ancestor = 1:length(specific_pf.particle_lists{1,1})
+for ancestor = 1:10:length(specific_pf.particle_lists{1,1})
     backtrack_trajectory = [];
     for ii = height(specific_pf):-1:1
         particle_list = specific_pf(ii,:).particle_lists{1,1};
@@ -22,10 +22,6 @@ mean_traj_y = mean_bt_traj_y(end:-1:1);
 mean_traj_x = mean_bt_traj_x(end:-1:1);
 mean_traj = [mean_traj_x', mean_traj_y'];
 %%
-
-pos_data = struct2table(position_data);
- pos_data.time = seconds(pos_data.time);
- pos_data = table2timetable(pos_data);
  
  pos_data = retime(pos_data, shs.position.time, 'spline');
  
