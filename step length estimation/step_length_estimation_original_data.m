@@ -4,7 +4,7 @@ clc
 clear path
 
 male_const.k1 = 0.415;
-male_const.k = 0.3116;
+male_const.k = 0.308;
 
 test_height = 1.80;
 
@@ -31,7 +31,7 @@ sl.sl_components.freq = 1./sl.sl_components.period;
 sl.mean_freq = mean(sl.sl_components.freq,'omitnan');
 
 sl.step_length = test_height.*male_const.k.*sqrt(sl.sl_components.freq);
-sl.step_length(1) = test_height.*male_const.k1;
+sl.step_length(1) = test_height.*male_const.k;
 sl.distance_travelled = sum(sl.step_length);
 
 sl_og_data_comparisons = [sl_og_data_comparisons; sl];
