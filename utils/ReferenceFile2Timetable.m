@@ -44,9 +44,15 @@ opts = setvaropts(opts, ["Var2", "Var3"], "WhitespaceRule", "preserve");
 opts = setvaropts(opts, ["Var2", "Var3"], "EmptyFieldRule", "auto");
 
 % Import the data
-references = readtable(filename, opts);
-references.elapsed = seconds(references.elapsed);
-references = table2timetable(references);
-references.door_detection = ones(height(references),1); 
+if exist(filename, 'file') == 2
+    
+    references = readtable(filename, opts);
+    references.elapsed = seconds(references.elapsed);
+    references = table2timetable(references);
+    references.door_detection = ones(height(references),1);
+else
+    disp(['door handle reference file: ' filename ' cannot be found'])
+    references = [];
+end
 
 end
