@@ -8,6 +8,7 @@ classdef AcquisitionData < handle
 
 		%  === Raw ===
 		raw_imu
+        door_handle_use
 
 		%  === Device computed ===
 		device_computed
@@ -22,6 +23,7 @@ classdef AcquisitionData < handle
 		function obj = AcquisitionData(obj)
 			obj.raw_imu = IMUData;
 			obj.device_computed = DeviceComputedData;
+            obj.door_handle_use = [];
         end
 
 	end

@@ -24,7 +24,7 @@ function aData = loadAndroidDataset(directory)
     
     mag_var_names = ["X","Y","Z"];
 	raw_imu.magnetometer = loadIfExists(directory, 'magnetometer.txt',mag_var_names);
-
+    
 	% Device computed data
 	device_computed = aData.device_computed;
     gyr_cal_var_names = ["gyr_cal_X","gyr_cal_Y","gyr_cal_Z"];
@@ -42,6 +42,9 @@ function aData = loadAndroidDataset(directory)
 		device_computed.attitude{:, 1:4} = device_computed.attitude{:, [4 1 2 3]};
     end
 	
+    % Door handle use
+    aData.door_handle_use = ReferenceFile2Timetable([directory 'references.txt']);
+    
 end
 
 function outputMatrix = loadIfExists(directory, file_name, variable_names)
@@ -60,7 +63,7 @@ function outputMatrix = loadIfExists(directory, file_name, variable_names)
 		outputMatrix = SSVFile2Timetable(target);
 	else
 		outputMatrix = [];
-        disp([file_path ' is not available'])
+%         disp([file_path ' is not available'])
 	end
 
 end
