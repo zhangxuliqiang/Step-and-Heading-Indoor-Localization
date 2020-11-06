@@ -1,6 +1,5 @@
 %% generating particle filter map
 
-
 % defining the scale of the map
 image = imread('binnenkaart (copy).png');
 not_white_regions_image  = rgb2gray(image)< 250;
@@ -29,45 +28,135 @@ start_point = ginput(1);
 hold off
 close(fig)
 
+%% Generate shs output
+
+pf1.sample_name = 'lopen1.1';
+pf1.shs = shs_estimation(pf1.sample_name);
+pf1.gt = importVideoGroundTruth([pf1.sample_name '_gt_from_video.csv']);
+pf1.doors = doors;
+pf1.walls = walls;
+pf1.std_sl = 0.18;
+pf1.std_orient = 0.16;
+
+pf2.sample_name = 'lopen1.2';
+pf2.shs = shs_estimation(pf2.sample_name);
+pf2.gt = importVideoGroundTruth([pf2.sample_name '_gt_from_video.csv']);
+pf2.doors = doors;
+pf2.walls = walls;
+pf2.std_sl = 0.18;
+pf2.std_orient = 0.16;
+
+pf3.sample_name = 'lopen1.3';
+pf3.shs = shs_estimation(pf3.sample_name);
+pf3.gt = importVideoGroundTruth([pf3.sample_name '_gt_from_video.csv']);
+pf3.doors = doors;
+pf3.walls = walls;
+pf3.std_sl = 0.18;
+pf3.std_orient = 0.16;
+
+pf5.sample_name = 'lopen1.5';
+pf5.shs = shs_estimation(pf5.sample_name);
+pf5.gt = importVideoGroundTruth([pf5.sample_name '_gt_from_video.csv']);
+pf5.doors = doors;
+pf5.walls = walls;
+pf5.std_sl = 0.18;
+pf5.std_orient = 0.16;
+
+all_pf=[pf1,pf2,pf3];
 
 %% finding completed track
 clc
-
-nr_particles = 600;
-
-while true
+pf = pf1;
+nr_particles = 2000;
+% holding = [];
+for i=1:7
     tic
-    [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
-        shs.step_and_orient, 0.2, 0.14, walls, doors, shs_sample.door_handle_use);
-    disp(['pf completed:' num2str(utils.final_timestep/height(shs.step_and_orient))])
+    [pf.specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+        pf.std_sl, pf.std_orient, pf);
+    disp([pf.sample_name 'pf completed:' num2str(utils.final_timestep/height(pf.shs.step_and_orient))])
     toc
     
-    if utils.final_timestep/height(shs.step_and_orient) > 0.90
-        break
+    if utils.final_timestep/height(pf.shs.step_and_orient) == 1
+        [pf.distance_rmse, pf.mean_traj] = CompareToGroundTruth(pf.shs,pf.specific_pf, utils, pf.gt);
+        disp(['rmse: ' pf.distance_rmse])
+        
+        holding = [holding,pf];
     end
-
 end
 
 %%
-[distance_rmse,mean_traj] = CompareToGroundTruth(shs,specific_pf, utils, position_data);
+pf = pf1;
+finding_nr_particles = [];
+% nr_particles = 1000;
+for nr_particles = 1000:1000:5000
+    for i = 1:5
+        disp([pf.sample_name ': nr particles: ' num2str(nr_particles) ' itteration: ' num2str(i) ])
+        tic
+        [pf.specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+            pf.std_sl, pf.std_orient, pf);
+        disp([pf.sample_name 'pf completed:' num2str(utils.final_timestep/height(pf.shs.step_and_orient))])
+        toc
+        pf.distance_rmse = nan;
+        pf.mean_traj = nan;
+        if utils.final_timestep/height(pf.shs.step_and_orient) == 1
+            [pf.distance_rmse,pf.mean_traj] = CompareToGroundTruth(pf.shs,pf.specific_pf, utils, pf.gt);
+        end
+    finding_nr_particles = [finding_nr_particles;nr_particles,pf.distance_rmse];    
+    end    
+end
 
-%% Individual testing
+save([time '_' pf.sample_name  '_nr_particle_results.mat'],'finding_nr_particles')
 
- [specific_pf,particle_history, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
-         shs.step_and_orient, 0.3, 0.1, walls, doors, shs_sample.door_handle_use);
- disp(['pf completed:' num2str(utils.final_timestep/height( shs.step_and_orient))])
-    %%
-    clc
-pf_stat = CompareToGroundTruth(specific_pf,utils, pos_data)
+%% finding completed track for a range
+clc
+nr_particles = 4000;
+results = [];
+
+for index =  1:length(all_pf)
+    pf = all_pf(index);
+    complete = 0;
+    for i = 1:5
+            disp([pf.sample_name ': itteration: ' num2str(i) ])
+            tic
+            [pf.specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+                pf.std_sl, pf.std_orient, pf);
+            disp([pf.sample_name 'pf completed:' num2str(utils.final_timestep/height(pf.shs.step_and_orient))])
+            toc
+            pf.distance_rmse = nan;
+            pf.mean_traj = nan;
+            if utils.final_timestep/height(pf.shs.step_and_orient) == 1
+            [pf.distance_rmse,pf.mean_traj] = CompareToGroundTruth(pf.shs,pf.specific_pf, utils, pf.gt);
+            complete = complete + 1;
+            disp(['completed: ' complete ' for ' pf.sample_name ...
+               'with rmse: ' num2str(pf.distance_rmse) ])
+            end
+        
+        results = [results;pf];
+    end
+end
+time = datestr(now,'yyyymmdd_HHMM');
+save([time '_range_three_trials_results_no_doors.mat'],'results')
+
+%%
+mean_traj = results(3).mean_traj;
+
+figure
+hold on
+plot(mean_traj(:,1),mean_traj(:,2), 'r')
+plot(pf1.gt.x,pf1.gt.y,'b')
+hold off
 
 %%
 clc
-nr_particles = 400;
+
+pf = pf5;
+itteration =[];
+nr_particles = 600;
 std_orient_counter = 0;
 
 orient_pf = [];
 
-for std_orient = 0.1:0.02:0.2
+for std_orient = 0.14:0.02:0.2
     std_orient_counter = std_orient_counter +1;
     
     fprintf('std_orient = %f \n', std_orient )
@@ -75,23 +164,26 @@ for std_orient = 0.1:0.02:0.2
     sl_pf = [];
     sl_std_counter = 0;
     
-    for std_sl = 0.1:0.02:0.2
+    for std_sl = 0.16:0.02:0.2
         sl_std_counter = sl_std_counter +1;
         fprintf('       std_sl = %f \n', std_sl )
-        realizations =[];
+        
+        realizations =repmat(struct('percent_complete', nan, 'distance_rmse', nan),5,1);
         
         for itteration = 1:5
-            fprintf('       itteration: %i' ,itteration )
+            fprintf('       itteration: %i \n' ,itteration )
             
-% [output, utils] = ParticleFilter_inside_mat(start_point, nr_particles,  shs.step_and_orient, std_sl, std_orient, walls, doors, door_handle_use)           
-            [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
-                shs.step_and_orient, std_sl, std_orient, walls, doors, shs_sample.door_handle_use);
-            disp(['       pf completed:' num2str(utils.final_timestep/height( shs.step_and_orient))])
+% [output, utils] = ParticleFilter_inside_mat(start_point, ...
+%     nr_particles, std_sl, std_orient, pf)
+             [specific_pf, utils] = ParticleFilter_inside_mat(start_point,nr_particles, ...
+                std_sl, std_orient, pf);
+            disp([pf.sample_name ' std_orient: ' num2str(std_orient) ' std_sl: ' num2str(std_sl) ...
+                ' pf completed:' num2str(utils.final_timestep/height(pf.shs.step_and_orient))])
             
-            realizations(itteration).percent_complete = utils.final_timestep/height( shs.step_and_orient);
+            realizations(itteration).percent_complete = utils.final_timestep/height( pf.shs.step_and_orient);
             
             if realizations(itteration).percent_complete == 1
-                realizations(itteration).distance_rmse = CompareToGroundTruth(shs,specific_pf, utils, position_data);
+                [realizations(itteration).distance_rmse, ~ ] =  CompareToGroundTruth(pf.shs, specific_pf, utils, pf.gt);
             else
                 realizations(itteration).distance_rmse = nan; 
             end
@@ -103,80 +195,4 @@ for std_orient = 0.1:0.02:0.2
     orient_pf(std_orient_counter).std_orient = std_orient;
     orient_pf(std_orient_counter).sl_pf = sl_pf;
 end
-save('orient_pf')
-%%
-
-plot_index = 1;
-sub_plot_length = length(orient_pf) + 1;
-std_sl_x_axis  = 0.1:0.02:0.2; 
-
- t = tiledlayout(length(orient_pf),1);
- 
-for i = 1:length(orient_pf)
-    
-    specific_sl_pf = orient_pf(i).sl_pf;
-    
-    rmse = [];
-    bc_mean_std = [];
-    
-    for std_sl_index = 1:length(specific_sl_pf)
-        track_completed_index = [specific_sl_pf(std_sl_index).realizations.percent_complete] == 1;
-       rmse = [rmse; specific_sl_pf(std_sl_index).realizations.distance_rmse];       
-    end
-    
-    ax(i) = nexttile;
-    b = bar(ax(i),std_sl_x_axis,rmse);
-    title(['orientation std: '  num2str(orient_pf(i).std_orient)])
-    set(ax(i),'fontsize',10)
-    ylim([0,10])
-    
-    xtips2 = b(i).XEndPoints-0.005;
-    ytips2 = 70.*ones(size(b(2).XEndPoints));
-    labels2 = string([specific_sl_pf.completed]);
-    text(xtips2,ytips2,labels2,'HorizontalAlignment','center',...
-    'VerticalAlignment','bottom','color','b', 'fontsize',6)
-    
-end
-title(t,'mean error from corresponding gps point')
-xlabel(t,'step length std (m)')
-ylabel(t,'Error (m)')
-xticklabels(ax(1:end-1),{})
-t.TileSpacing = 'compact';
-
-
-
-%% step by step movement
-close all
-h_fig = figure(1);
-set(h_fig,'KeyPressFcn',{@myfun,specific_pf,walls});
-
-function myfun(src,event,specific_pf,walls)
-        persistent ii;
-        if isempty(ii)
-            ii = 0; 
-        end
-        ii = ii + 1;
-
-        figure(1)
-        set(gcf, 'Position', get(0, 'Screensize'));
-        tiledlayout(2,1)
-
-        % First plot
-        ax1 = nexttile(1);
-        show(walls)
-        hold on
-        scatter([specific_pf(ii).particle_lists.x_pos]', [specific_pf(ii).particle_lists.y_pos]', '.')
-        title(['itteration: ' num2str(ii)])
-        hold off
-
-        % Second plot
-        ax2 = nexttile(2);
-        bar(specific_pf(ii).particle_lists.pre_resample_weight)
-
- 
-
-end
-
-
-
-
+save([pf.sample_name 'parameter search.mat'],'orient_pf')
