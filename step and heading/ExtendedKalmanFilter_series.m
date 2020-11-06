@@ -116,7 +116,7 @@ for index = 1:1:height(combined_raw)
             
             error = y - y_hat;
             
-            if norm(y) < 1.2 && norm(y) > 0.8
+            if norm(y) < 1.1 && norm(y) > 0.9
                 [est,P] = measUpdate(est,P,error,H,R);
                 J = (1/norm(est)^3)*(eye(4)*(est'*est) - (est*est'));
                 est = est/norm(est);
