@@ -10,9 +10,9 @@ if strcmp(data_set_name, 'lopen1.2' )
     shs_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/lopen1_2/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/noise/');
-    acc_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/noise/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/marie testing/lopen1.2/noise/');
@@ -27,9 +27,9 @@ if strcmp(data_set_name, 'lopen1.1' )
     shs_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/lopen1_1/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/noise/');
-    acc_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/noise/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/marie testing/lopen1.1/noise/');
@@ -44,9 +44,9 @@ if strcmp(data_set_name, 'inside_walking_record_ns_marie' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/walking_around_door_record/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
@@ -61,9 +61,9 @@ if strcmp(data_set_name, 'inside_walking_ns_marie' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/binnen_lopen_1_geen_smartwatch/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
@@ -76,9 +76,9 @@ if strcmp(data_set_name, 'inside_stationary_marie' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/stationary_test/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/20 October stationary/noise/');
@@ -94,9 +94,9 @@ if strcmp(data_set_name, 'outside' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/13 October/two_times_around_the_block/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_gyr/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_gyr/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/13 October/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/13 October/magnetic_north_buiten/');
@@ -109,9 +109,9 @@ if strcmp(data_set_name, 'stationary' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/15 October/stationary_test/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_gyr/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_gyr/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/15 October/noise/');
@@ -124,9 +124,9 @@ if strcmp(data_set_name, 'inside' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/walking_inside/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_gyr/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_gyr/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/15 October walking/noise/');
@@ -139,9 +139,9 @@ if strcmp(data_set_name, 'inside tracked' )
     shs_sample = loadAndroidDataset('datasets/one plus nord/17 October/walking_around_inside/');
     
     % load calibration data
-    mag_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/calib_mag/');
-    gyro_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/laying_on_the_floor/');
-    acc_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/calib_acc/');
+    calib_samples.mag_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/calib_mag/');
+    calib_samples.gyr_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/laying_on_the_floor/');
+    calib_samples.acc_calib_sample = loadAndroidDataset('datasets/one plus nord/17 October/calib_acc/');
     
     % load magnetic north data
     magnetic_north_sample = loadAndroidDataset('datasets/one plus nord/17 October/laying_on_the_floor/');
@@ -189,7 +189,7 @@ end
 clc
 disp('Calibrating magnetometer sensor data')
 
-mag_raw = mag_calib_sample.raw_imu.magnetometer{:,:};
+mag_raw = calib_samples.mag_calib_sample.raw_imu.magnetometer{:,:};
 
 N=size(mag_raw,1);
 M=ones(N,13);
@@ -246,7 +246,7 @@ title('Calibrated Magnetometer Data')
 
 %% Accelerometer Calibration
 
-acc_raw = acc_calib_sample.raw_imu.accelerometer{:,:};
+acc_raw = calib_samples.acc_calib_sample.raw_imu.accelerometer{:,:};
 
 N = size(acc_raw,1);
 M=ones(N,13);
@@ -294,7 +294,7 @@ legend('calibrated calibration data','calibrated SHS data')
 title('Calibrated Accelerometer Data')
 
 %% Gyroscope Calibration
-gyr_bias = mean(gyro_calib_sample.raw_imu.gyroscope{:,:});
+gyr_bias = mean(calib_samples.gyr_calib_sample.raw_imu.gyroscope{:,:});
 calib_gyr = shs_sample.raw_imu.gyroscope{:,1:3}-gyr_bias;
 calib_gyr_data = timetable(shs_sample.raw_imu.gyroscope.Time);
 calib_gyr_data.X = calib_gyr(:,1);
