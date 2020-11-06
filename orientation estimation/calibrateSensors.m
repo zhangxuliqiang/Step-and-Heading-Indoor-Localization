@@ -5,7 +5,7 @@ disp('Calibrating sensor data')
 
  mag_calib_sample = calib_samples.mag_calib_sample ;
  acc_calib_sample = calib_samples.acc_calib_sample;
- gyro_calib_sample = calib_samples.gyro_calib_sample ;
+ gyr_calib_sample = calib_samples.gyr_calib_sample ;
 
 %% Magnetometer calibration
 clc
@@ -84,7 +84,7 @@ calib_acc_data.Y = calib_acc(2,:)';
 calib_acc_data.Z = calib_acc(3,:)';
 
 %% Gyroscope Calibration
-gyr_bias = mean(gyro_calib_sample.raw_imu.gyroscope{:,:});
+gyr_bias = mean(gyr_calib_sample.raw_imu.gyroscope{:,:});
 calib_gyr = shs_sample.raw_imu.gyroscope{:,1:3}-gyr_bias;
 calib_gyr_data = timetable(shs_sample.raw_imu.gyroscope.Time);
 calib_gyr_data.X = calib_gyr(:,1);
