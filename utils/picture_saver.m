@@ -20,7 +20,7 @@ for i  = 1:1:n
             identifier = title.String;
         end
     else        
-        identifier = name;
+        identifier = [name '_' int2str(i)];
     end
     
     identifier = strrep(identifier," ", "_");
