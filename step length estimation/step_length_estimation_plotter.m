@@ -6,20 +6,25 @@ color_scheme = struct('unique__user_ids', ...
     mat2cell(unique_user_ids_genders(:,1),ones(1,length(unique_user_ids_genders))),...
                       'values',mat2cell(values,ones(1,length(values))));
 
-% plot all user lines and markers depending on walking speed
+%% plot all user lines and markers depending on walking speed
 user_ids = [];
 t = [];
 figure
 i = 1;
 for specific_freq_com = freq_comp
         color_index = find([color_scheme.unique__user_ids] == ...
-            specific_freq_com.name);
-%         if color_index == 14
-%             continue
-%         end
+            specific_freq_com.name);        
+        
+        
+        
         x = [specific_freq_com.proc_data(:).height_mult_sqrt_freq];
         z = [specific_freq_com.proc_data(:).path_length_div_nr_steps];
         color =color_scheme(color_index).values;
+        
+        if color_index == 14 
+            x(3) = nan;
+            z(3) = nan;
+        end
         
         hold on
         t(i) = plot(x,z,'-','color',color);
@@ -36,9 +41,13 @@ title('Frequency based step length estimation')
 hold on 
 x = 1:0.1:3;
 y = tian_constant*x;
-t(end+1) = plot(x,y,'--','LineWidth',3);
+t(end+1) = plot(x,y,'--','color',[0.4660, 0.6740, 0.1880],'LineWidth',3);
 hold off
-xlim([1.2,2.7])
+
+xlim([1,2.7])
+xlim([1.4,2.7])
+
+
 % Line legend
 leg_entries = [freq_comp.name];
 leg = legend(t(1:end-1),leg_entries,'Location','West');
