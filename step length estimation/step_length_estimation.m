@@ -70,6 +70,7 @@ for unique_name_gender = unique_user_ids_genders'
         if strcmp(sl_comparison.properties.user_id,unique_name_gender(1))
             ii = ii +1;
             
+             freq_comp(counter).properties = sl_comparison.properties;
              freq_comp(counter).step_data(ii) = sl_comparison.steps;
             
             freq_comp(counter).proc_data(ii).height_mult_sqrt_freq = ...
@@ -93,7 +94,7 @@ all_plotting_data = arrayfun(@(S) [[S.proc_data.height_mult_sqrt_freq]',...
 all_plotting_data = cell2mat(all_plotting_data);
 corrupt_data = find(isnan(all_plotting_data(:,1))');
 
-% all_plotting_data([corrupt_data,40:42],:) = [];
+% all_plotting_data([corrupt_data,30,42],:) = [];
 
 all_plotting_data(corrupt_data,:) = []; %#ok<*FNDSB> warning supression
 
