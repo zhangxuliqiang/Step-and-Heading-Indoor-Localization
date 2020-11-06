@@ -57,19 +57,28 @@ for sl_dataset = pocket_data_180m'
 end
 
 %%
-
+clc
 all_dist_error_perc = [sl_val_comparisons.distance_error_perc];
-% all_dist_error_perc(42) = [];
+all_dist_error_perc([30,42]) = nan;
+
+mean(abs(all_dist_error_perc),'omitnan')
+std(abs(all_dist_error_perc),'omitnan')
+%%
 
 figure
+subplot(2,1,1)
 hold on
+plot(abs(all_dist_error_perc_all_data))
 plot(abs(all_dist_error_perc))
-scatter(42,all_dist_error_perc(42),'xr')
+scatter(42,all_dist_error_perc(42),'xg')
 hold off
-
-mean(abs(all_dist_error_perc))
-std(abs(all_dist_error_perc))
-
 title('Step Length Estimation Validation')
 xlabel('Dataset ID (#)')
 ylabel('absolute percentage distance error (%)')
+leg1 = legend('K = 0.3116','K = 0.3080','Location','NorthWest');
+title(leg1,'Tunable Parameter')
+subplot(2,1,2)
+plot(abs(all_dist_error_perc_all_data) - abs(all_dist_error_perc))
+
+
+
