@@ -1,6 +1,10 @@
 function [output, utils] = ParticleFilter_inside_mat(start_point, ...
-    nr_particles, step_orient, std_sl, ...
-    std_orient, walls, doors, door_handle_use)
+    nr_particles, std_sl, std_orient, pf)
+
+step_orient = pf.shs.step_and_orient;
+walls = pf.walls;
+doors = pf.doors;
+door_handle_use = pf.shs.shs_sample.door_handle_use;
 
 delta_angle = [ diff(step_orient.yaw); 0];
 
@@ -33,7 +37,7 @@ for timestep = 1: height(step_orient)
     progress = round(timestep/height(step_orient)*100);
     if mod(progress,10) == 0  && round(progress) ~= 0
         if progress~=progress_before
-            disp(['percentage complete: ',  num2str(progress)]);
+            disp(['particle filter progess (%): ',  num2str(progress)]);
             progress_before = progress;
         end
     end
